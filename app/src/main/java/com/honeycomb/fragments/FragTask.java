@@ -2,35 +2,38 @@ package com.honeycomb.fragments;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 
-import com.amazonaws.models.nosql.TaskDO;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.honeycomb.R;
-import com.honeycomb.helper.Database.operations.Get;
-import com.honeycomb.helper.Database.operations.Update;
-import com.honeycomb.interfaces.AsyncResponse;
+import com.honeycomb.helper.Database.objects.Milestone;
+import com.honeycomb.helper.Database.objects.Task;
+import com.honeycomb.helper.adapters.MilestoneAdapter;
+
+import java.util.ArrayList;
 
 /**
  * Created by Ash on 20/01/2017.
  */
 
-public class FragTask extends baseFragment implements AsyncResponse
+public class FragTask extends baseEditFragment
 {
-    private boolean isEditMode = false;
+    private static Task currentTask;
 
-    private MenuItem edit;
-    private MenuItem confirm;
+    private EditText txtName;
+    private EditText txtDescription;
+    private Button butAddMilestone;
 
-    private static TaskDO currentTask;
-
-    public static FragTask newInstance(@Nullable TaskDO task)
+    public static FragTask newInstance(@Nullable Task task)
     {
         FragTask newFragment = new FragTask();
         currentTask = task;
@@ -48,64 +51,110 @@ public class FragTask extends baseFragment implements AsyncResponse
     public void onActivityCreated(@Nullable Bundle savedInstanceState)
     {
         super.onActivityCreated(savedInstanceState);
-        getToolbar().setTitle("Tasks");
+        getToolbar().setTitle("Task");
 
-        new Get<>(TaskDO.class, this, currentTask.getProjectID(), currentTask.getTaskID()).execute();
+        loadTask();
+        loadMilestones();
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater)
+    protected void setEditMode(boolean isEditMode, boolean needsUpdate)
     {
-        inflater.inflate(R.menu.task, menu);
-        edit = menu.findItem(R.id.action_edit);
-        confirm = menu.findItem(R.id.action_confirm);
-        setEditMode(isEditMode);
-        super.onCreateOptionsMenu(menu, inflater);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item)
-    {
-        int id = item.getItemId();
-
-        if(id == R.id.action_edit)
+        super.setEditMode(isEditMode, needsUpdate);
+        txtName.setEnabled(isEditMode);
+        txtDescription.setEnabled(isEditMode);
+        if(needsUpdate)
         {
-            setEditMode(true);
-            return true;
-        }
-        else if(id == R.id.action_confirm)
-        {
-            setEditMode(false);
-            EditText txtDescription = (EditText)getView().findViewById(R.id.txtDescription);
+            currentTask.setName(txtName.getText().toString());
             currentTask.setDescription(txtDescription.getText().toString());
-            new Update<>(TaskDO.class).execute(currentTask);
-            return true;
+            dbRoot.child(Task.TABLE_NAME).child(currentTask.getTaskID()).setValue(currentTask);
         }
-
-        return super.onOptionsItemSelected(item);
     }
 
-    private void setEditMode(boolean isEditMode)
+    public void addMilestone(View view)
     {
-        this.isEditMode = isEditMode;
-        edit.setVisible(!isEditMode);
-        confirm.setVisible(isEditMode);
-        getView().findViewById(R.id.txtTaskName).setEnabled(isEditMode);
-        getView().findViewById(R.id.txtDescription).setEnabled(isEditMode);
+        Milestone milestone = new Milestone();
+        milestone.setTaskID(currentTask.getTaskID());
+        milestone.setMilestoneID(dbRoot.child(Milestone.TABLE_NAME).push().getKey());
+        milestone.setName("TestName");
+        milestone.setDescription("TestDescription");
+        milestone.setCompleted(false);
+
+        dbRoot.child(Milestone.TABLE_NAME).child(milestone.getMilestoneID()).setValue(milestone);
     }
 
-    @Override
-    public void onFinished(Object result)
+    protected void loadIO()
     {
-        currentTask = (TaskDO)result;
-
-        if(currentTask != null)
+        txtName = (EditText)getView().findViewById(R.id.txtName);
+        txtDescription = (EditText)getView().findViewById(R.id.txtDescription);
+        butAddMilestone = (Button)getView().findViewById(R.id.butAddMilestone);
+        butAddMilestone.setOnClickListener(new View.OnClickListener()
         {
-            EditText txtName = (EditText)getView().findViewById(R.id.txtTaskName);
-            txtName.setText(currentTask.getName());
-            EditText txtDescription = (EditText)getView().findViewById(R.id.txtDescription);
-            txtDescription.setText(currentTask.getDescription());
-        }
-        else { Log.d(TAG, "Task is null - Starting new..."); }
+            @Override
+            public void onClick(View view)
+            {
+                addMilestone(view);
+            }
+        });
     }
+
+    private void loadTask()
+    {
+        dbRoot.child(Task.TABLE_NAME).child(currentTask.getTaskID()).addValueEventListener(new ValueEventListener()
+        {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot)
+            {
+                currentTask = dataSnapshot.getValue(Task.class);
+                txtName.setText(currentTask.getName());
+                txtDescription.setText(currentTask.getDescription());
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError)
+            {
+
+            }
+        });
+    }
+
+    private void loadMilestones()
+    {
+        final MilestoneAdapter milestoneAdapter = new MilestoneAdapter(getContext());
+        ListView lv = (ListView)getView().findViewById(R.id.lvMilestones);
+        lv.setAdapter(milestoneAdapter);
+        lv.setOnItemClickListener(onClick);
+
+        Query queryRef = dbRoot.child(Milestone.TABLE_NAME).orderByChild("taskID").equalTo(currentTask.getTaskID()); // TODO, write a DB helper class
+        queryRef.addValueEventListener(new ValueEventListener()
+        {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot)
+            {
+                ArrayList<Milestone> milestones = new ArrayList<>();
+                for(DataSnapshot snap : dataSnapshot.getChildren())
+                {
+                    Milestone milestone = snap.getValue(Milestone.class);
+                    milestones.add(milestone);
+                }
+                milestoneAdapter.updateData(milestones);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError)
+            {
+
+            }
+        });
+    }
+
+    private AdapterView.OnItemClickListener onClick = new AdapterView.OnItemClickListener()
+    {
+        @Override
+        public void onItemClick(AdapterView<?> adapterView, View view, int i, long l)
+        {
+            Milestone entry = (Milestone)adapterView.getItemAtPosition(i);
+            fragmentHelper.switchToFragment(R.id.fragmentContainer, FragMilestone.newInstance(entry), null); // TODO, fragment container can be generic.... never changes
+        }
+    };
 }

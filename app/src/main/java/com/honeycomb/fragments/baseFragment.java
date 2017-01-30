@@ -6,6 +6,8 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.honeycomb.helper.FragmentHelper;
 
 /**
@@ -15,7 +17,9 @@ import com.honeycomb.helper.FragmentHelper;
 public abstract class baseFragment extends Fragment
 {
     protected final String TAG = this.getClass().getSimpleName();
+
     protected FragmentHelper fragmentHelper;
+    protected DatabaseReference dbRoot;
 
     protected ActionBar getToolbar()
     {
@@ -27,6 +31,7 @@ public abstract class baseFragment extends Fragment
     {
         super.onActivityCreated(savedInstanceState);
         fragmentHelper = new FragmentHelper(getActivity());
+        dbRoot = FirebaseDatabase.getInstance().getReference();
         setHasOptionsMenu(true);
     }
 }

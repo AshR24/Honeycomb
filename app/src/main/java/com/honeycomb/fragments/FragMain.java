@@ -11,24 +11,24 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 
-import com.amazonaws.models.nosql.TaskDO;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.honeycomb.R;
-import com.honeycomb.helper.Database.operations.Add;
-import com.honeycomb.helper.Database.operations.GetAll;
-import com.honeycomb.helper.Time;
+import com.honeycomb.helper.Database.objects.Task;
 import com.honeycomb.helper.adapters.TaskAdapter;
-import com.honeycomb.interfaces.AsyncResponse;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 
 /**
  * Created by Ash on 20/01/2017.
  */
 
-public class FragMain extends baseFragment implements AsyncResponse
+public class FragMain extends baseFragment
 {
+
     public static FragMain newInstance(String thing)
     {
         FragMain newFragment = new FragMain();
@@ -46,11 +46,10 @@ public class FragMain extends baseFragment implements AsyncResponse
     }
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState)
+    public void onActivityCreated(@Nullable final Bundle savedInstanceState)
     {
         super.onActivityCreated(savedInstanceState);
         getToolbar().setTitle("Main");
-        new GetAll<>(TaskDO.class, this).execute();
 
         Button but = (Button)getView().findViewById(R.id.button);
         but.setOnClickListener(new View.OnClickListener()
@@ -61,6 +60,8 @@ public class FragMain extends baseFragment implements AsyncResponse
                 addTestItem(view);
             }
         });
+
+        loadTasks();
     }
 
     @Override
@@ -70,14 +71,34 @@ public class FragMain extends baseFragment implements AsyncResponse
         super.onCreateOptionsMenu(menu, inflater);
     }
 
-    @Override
-    public void onFinished(Object result)
+    private void loadTasks()
     {
-        TaskAdapter taskAdapter = new TaskAdapter(getContext(), new ArrayList<>((List<TaskDO>)result));
-
+        final TaskAdapter taskAdapter = new TaskAdapter(getContext());
         ListView lv = (ListView)getView().findViewById(R.id.lvTasks);
         lv.setAdapter(taskAdapter);
         lv.setOnItemClickListener(onClick);
+
+        DatabaseReference db = FirebaseDatabase.getInstance().getReference();
+        db.child(Task.TABLE_NAME).addValueEventListener(new ValueEventListener()
+        {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot)
+            {
+                ArrayList<Task> tasks = new ArrayList<>();
+                for(DataSnapshot snap : dataSnapshot.getChildren())
+                {
+                    Task task = snap.getValue(Task.class);
+                    tasks.add(task);
+                }
+                taskAdapter.updateData(tasks);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError)
+            {
+
+            }
+        });
     }
 
     private AdapterView.OnItemClickListener onClick = new AdapterView.OnItemClickListener()
@@ -85,36 +106,19 @@ public class FragMain extends baseFragment implements AsyncResponse
         @Override
         public void onItemClick(AdapterView<?> adapterView, View view, int i, long l)
         {
-            System.out.println("Hi");
-
-            TaskDO entry = (TaskDO)adapterView.getItemAtPosition(i);
-
+            Task entry = (Task)adapterView.getItemAtPosition(i);
             fragmentHelper.switchToFragment(R.id.fragmentContainer, FragTask.newInstance(entry), null);
         }
     };
 
-
-
     public void addTestItem(View view)
     {
-        UUID uuid = UUID.randomUUID();
+        Task test = new Task();
+        test.setProjectID("1");
+        test.setTaskID(dbRoot.child(Task.TABLE_NAME).push().getKey());
+        test.setName("TestName");
+        test.setDescription("TestDescription");
 
-        TaskDO task = new TaskDO();
-        task.setProjectID("1");
-        task.setTaskID(Long.toString(uuid.getLeastSignificantBits(), Character.MAX_RADIX));
-        task.setName("TestName");
-        task.setDescription("TestDescription");
-
-        double currentTime = Time.getCurrentUnixTimestamp();
-        //task.setDateCreated(currentTime);
-        //task.setDateLastEdited(currentTime);
-
-        new Add<>(TaskDO.class).execute(task);
-        getItems(view);
-    }
-
-    public void getItems(View view)
-    {
-        new GetAll<>(TaskDO.class, this).execute();
+        dbRoot.child(Task.TABLE_NAME).child(test.getTaskID()).setValue(test);
     }
 }

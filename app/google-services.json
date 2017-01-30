@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "904458874438",
+    "firebase_url": "https://honeycomb-157216.firebaseio.com",
+    "project_id": "honeycomb-157216",
+    "storage_bucket": "honeycomb-157216.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:904458874438:android:568146d535303af2",
+        "android_client_info": {
+          "package_name": "com.ash.honeycomb"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "904458874438-ga9opp4v3lgqa0tce4set0nvrd7v6rtd.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ash.honeycomb",
+            "certificate_hash": "C850FB8C5D8DE21F66F8DB7F614D9BC012395267"
+          }
+        },
+        {
+          "client_id": "904458874438-sfjcol6pml4db6ab8tl4vpt0s5fd6t71.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB68i33HvpZ8m8Yk9ubT-ijNqZoAqfIwqA"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "904458874438-sfjcol6pml4db6ab8tl4vpt0s5fd6t71.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

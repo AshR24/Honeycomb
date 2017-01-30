@@ -22,17 +22,23 @@ android {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
+
+
+
+    compile('com.mikepenz:materialdrawer:5.8.1@aar') {
+        // https://github.com/mikepenz/MaterialDrawer http://mikepenz.github.io/MaterialDrawer/
+        transitive = true
+    }
     compile 'com.android.support:appcompat-v7:24.2.1'
     compile 'com.android.support:design:24.2.1'
     compile 'com.android.support.constraint:constraint-layout:1.0.0-beta4'
     compile 'com.android.support:support-v4:24.2.1'
-
     compile 'com.amazonaws:aws-android-sdk-core:2.3.8'
     compile 'com.amazonaws:aws-android-sdk-ddb:2.3.8'
     compile 'com.amazonaws:aws-android-sdk-ddb-mapper:2.3.8'
     compile 'com.amazonaws:aws-android-sdk-cognitoidentityprovider:2.3.8'
-
-    compile('com.mikepenz:materialdrawer:5.8.1@aar') { // https://github.com/mikepenz/MaterialDrawer http://mikepenz.github.io/MaterialDrawer/
-        transitive = true
-    }
+    compile 'com.google.firebase:firebase-database:10.0.1'
 }
+
+
+apply plugin: 'com.google.gms.google-services'
