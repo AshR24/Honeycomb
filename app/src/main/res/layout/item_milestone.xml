@@ -4,7 +4,7 @@
                                              xmlns:tools="http://schemas.android.com/tools"
                                              android:orientation="vertical"
                                              android:layout_width="match_parent"
-                                             android:layout_height="match_parent">
+                                             android:layout_height="wrap_content">
 
     <CheckBox
         android:id="@+id/cbCompleted"
@@ -17,9 +17,23 @@
 
     <TextView
         android:id="@+id/txtName"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:text="Milestone Name"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintLeft_toRightOf="@+id/cbCompleted"
-        android:layout_marginTop="8dp"/>
+        android:layout_marginEnd="16dp"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginRight="16dp"/>
+
+    <TextView
+        android:text="TextView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/txtDeadline"
+        android:drawableStart="@drawable/ic_schedule_black_24dp"
+        tools:text="Deadline"
+        app:layout_constraintTop_toBottomOf="@+id/txtName"
+        app:layout_constraintLeft_toRightOf="@+id/cbCompleted"
+        />
 </android.support.constraint.ConstraintLayout>

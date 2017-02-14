@@ -12,6 +12,7 @@ public class Milestone
     private String milestoneID;
     private String name;
     private String description;
+    private String deadline;
     private boolean isCompleted;
 
     public String getTaskID() { return taskID; }
@@ -25,6 +26,9 @@ public class Milestone
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+
+    public String getDeadline() { return deadline; }
+    public void setDeadline(String deadline) { this.deadline = deadline; }
 
     public boolean isCompleted() { return isCompleted; }
     public void setCompleted(boolean isCompleted) { this.isCompleted = isCompleted; }

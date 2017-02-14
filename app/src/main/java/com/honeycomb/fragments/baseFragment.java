@@ -5,10 +5,17 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Menu;
+import android.view.MenuInflater;
 
+import com.github.clans.fab.FloatingActionButton;
+import com.github.clans.fab.FloatingActionMenu;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.honeycomb.R;
 import com.honeycomb.helper.FragmentHelper;
+
+import java.util.ArrayList;
 
 /**
  * Created by Ash on 20/01/2017.
@@ -20,6 +27,9 @@ public abstract class baseFragment extends Fragment
 
     protected FragmentHelper fragmentHelper;
     protected DatabaseReference dbRoot;
+
+    protected FloatingActionMenu fam;
+    protected ArrayList<FloatingActionButton> fabs;
 
     protected ActionBar getToolbar()
     {
@@ -33,5 +43,28 @@ public abstract class baseFragment extends Fragment
         fragmentHelper = new FragmentHelper(getActivity());
         dbRoot = FirebaseDatabase.getInstance().getReference();
         setHasOptionsMenu(true);
+        initFam();
+    }
+
+    private void initFam()
+    {
+        fam = (FloatingActionMenu)getActivity().findViewById(R.id.fab_Menu);
+        fabs = new ArrayList<>();
+    }
+
+    public void setFam(ArrayList<FloatingActionButton> fabs)
+    {
+        fam.removeAllMenuButtons();
+        for(FloatingActionButton fab : fabs)
+        {
+            fam.addMenuButton(fab);
+        }
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater)
+    {
+        inflater.inflate(R.menu.main, menu);
+        super.onCreateOptionsMenu(menu, inflater);
     }
 }

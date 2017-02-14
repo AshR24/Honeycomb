@@ -2,14 +2,16 @@ package com.honeycomb.fragments;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListView;
 
+import com.github.clans.fab.FloatingActionButton;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.Query;
@@ -18,6 +20,8 @@ import com.honeycomb.R;
 import com.honeycomb.helper.Database.objects.Milestone;
 import com.honeycomb.helper.Database.objects.Task;
 import com.honeycomb.helper.adapters.MilestoneAdapter;
+
+import org.joda.time.DateTime;
 
 import java.util.ArrayList;
 
@@ -31,7 +35,7 @@ public class FragTask extends baseEditFragment
 
     private EditText txtName;
     private EditText txtDescription;
-    private Button butAddMilestone;
+    private EditText txtDeadline;
 
     public static FragTask newInstance(@Nullable Task task)
     {
@@ -55,47 +59,40 @@ public class FragTask extends baseEditFragment
 
         loadTask();
         loadMilestones();
+
+        ArrayList<FloatingActionButton> fabs = new ArrayList<>();
+        FloatingActionButton fab = new FloatingActionButton(getContext());
+        fab.setLabelText("Add Milestone");
+        fab.setOnClickListener(addMilestone);
+        fabs.add(fab);
+        if(currentTask.getDeadline() == null)
+        {
+            FloatingActionButton fabAddDeadline = new FloatingActionButton(getContext());
+            fabAddDeadline.setLabelText("Add Deadline");
+            fabAddDeadline.setOnClickListener(addDeadline);
+            fabs.add(fabAddDeadline);
+        }
+        setFam(fabs);
     }
 
     @Override
-    protected void setEditMode(boolean isEditMode, boolean needsUpdate)
+    protected void setEditMode(boolean isEditMode)
     {
-        super.setEditMode(isEditMode, needsUpdate);
-        txtName.setEnabled(isEditMode);
-        txtDescription.setEnabled(isEditMode);
-        if(needsUpdate)
+        super.setEditMode(isEditMode);
+        if(!isEditMode)
         {
             currentTask.setName(txtName.getText().toString());
             currentTask.setDescription(txtDescription.getText().toString());
             dbRoot.child(Task.TABLE_NAME).child(currentTask.getTaskID()).setValue(currentTask);
+            Log.d(TAG, "Saved Task");
         }
-    }
-
-    public void addMilestone(View view)
-    {
-        Milestone milestone = new Milestone();
-        milestone.setTaskID(currentTask.getTaskID());
-        milestone.setMilestoneID(dbRoot.child(Milestone.TABLE_NAME).push().getKey());
-        milestone.setName("TestName");
-        milestone.setDescription("TestDescription");
-        milestone.setCompleted(false);
-
-        dbRoot.child(Milestone.TABLE_NAME).child(milestone.getMilestoneID()).setValue(milestone);
     }
 
     protected void loadIO()
     {
-        txtName = (EditText)getView().findViewById(R.id.txtName);
-        txtDescription = (EditText)getView().findViewById(R.id.txtDescription);
-        butAddMilestone = (Button)getView().findViewById(R.id.butAddMilestone);
-        butAddMilestone.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                addMilestone(view);
-            }
-        });
+        txtName = initEditText(R.id.txtName);
+        txtDescription = initEditText(R.id.txtDescription);
+        txtDeadline = initEditText(R.id.txtDeadline);
     }
 
     private void loadTask()
@@ -108,6 +105,16 @@ public class FragTask extends baseEditFragment
                 currentTask = dataSnapshot.getValue(Task.class);
                 txtName.setText(currentTask.getName());
                 txtDescription.setText(currentTask.getDescription());
+
+                if(currentTask.getDeadline() == null)
+                {
+                    txtDeadline.setVisibility(View.INVISIBLE);
+                }
+                else
+                {
+                    txtDeadline.setVisibility(View.VISIBLE);
+                    txtDeadline.setText(currentTask.getDeadline());
+                }
             }
 
             @Override
@@ -120,10 +127,15 @@ public class FragTask extends baseEditFragment
 
     private void loadMilestones()
     {
-        final MilestoneAdapter milestoneAdapter = new MilestoneAdapter(getContext());
-        ListView lv = (ListView)getView().findViewById(R.id.lvMilestones);
-        lv.setAdapter(milestoneAdapter);
-        lv.setOnItemClickListener(onClick);
+        final MilestoneAdapter milestoneAdapter = new MilestoneAdapter();
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
+
+        RecyclerView rv = (RecyclerView)getView().findViewById(R.id.rvMilestones);
+        rv.setLayoutManager(linearLayoutManager);
+        rv.setAdapter(milestoneAdapter);
+
+        milestoneAdapter.getClickSubject()
+                .subscribe(this::switchToMilestone);
 
         Query queryRef = dbRoot.child(Milestone.TABLE_NAME).orderByChild("taskID").equalTo(currentTask.getTaskID()); // TODO, write a DB helper class
         queryRef.addValueEventListener(new ValueEventListener()
@@ -137,7 +149,7 @@ public class FragTask extends baseEditFragment
                     Milestone milestone = snap.getValue(Milestone.class);
                     milestones.add(milestone);
                 }
-                milestoneAdapter.updateData(milestones);
+                milestoneAdapter.update(milestones);
             }
 
             @Override
@@ -148,13 +160,37 @@ public class FragTask extends baseEditFragment
         });
     }
 
-    private AdapterView.OnItemClickListener onClick = new AdapterView.OnItemClickListener()
+    private void switchToMilestone(Milestone milestone)
     {
-        @Override
-        public void onItemClick(AdapterView<?> adapterView, View view, int i, long l)
-        {
-            Milestone entry = (Milestone)adapterView.getItemAtPosition(i);
-            fragmentHelper.switchToFragment(R.id.fragmentContainer, FragMilestone.newInstance(entry), null); // TODO, fragment container can be generic.... never changes
-        }
+        fragmentHelper.switchToFragment(R.id.fragment_container, FragMilestone.newInstance(milestone), null);
+    }
+
+    private View.OnClickListener addMilestone = v ->
+    {
+        LayoutInflater inflater = getActivity().getLayoutInflater();
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext())
+                .setTitle("Add Milestone")
+                .setView(inflater.inflate(R.layout.dialog_add_task, null))
+                .setPositiveButton("Add", (dialog, which) -> {
+                    AlertDialog ad = (AlertDialog)dialog;
+                    Log.d(TAG, "Adding Milestone");
+                    Milestone milestone = new Milestone();
+                    milestone.setTaskID(currentTask.getTaskID());
+                    milestone.setMilestoneID(dbRoot.child(Milestone.TABLE_NAME).push().getKey());
+                    milestone.setName(((EditText)ad.findViewById(R.id.txtName)).getText().toString());
+                    milestone.setDescription(((EditText)ad.findViewById(R.id.txtDescription)).getText().toString());
+                    milestone.setCompleted(false);
+                    dbRoot.child(Milestone.TABLE_NAME).child(milestone.getMilestoneID()).setValue(milestone);
+                })
+                .setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+        builder.show();
+    };
+
+    private View.OnClickListener addDeadline = v ->
+    {
+        Log.d(TAG, "Adding Milestone");
+        currentTask.setDeadline(new DateTime().toString());
+
+        dbRoot.child(Task.TABLE_NAME).child(currentTask.getTaskID()).child("deadline").setValue(currentTask.getDeadline());
     };
 }

@@ -2,15 +2,17 @@ package com.honeycomb.fragments;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.Button;
-import android.widget.ListView;
+import android.widget.EditText;
 
+import com.github.clans.fab.FloatingActionButton;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -28,14 +30,11 @@ import java.util.ArrayList;
 
 public class FragMain extends baseFragment
 {
+    private ValueEventListener taskListDBListener;
 
-    public static FragMain newInstance(String thing)
+    public static FragMain newInstance()
     {
-        FragMain newFragment = new FragMain();
-        /*Bundle args = new Bundle();
-        args.putString("Name", thing);
-        newFragment.setArguments(args);*/
-        return newFragment;
+        return new FragMain();
     }
 
     @Nullable
@@ -49,37 +48,43 @@ public class FragMain extends baseFragment
     public void onActivityCreated(@Nullable final Bundle savedInstanceState)
     {
         super.onActivityCreated(savedInstanceState);
-        getToolbar().setTitle("Main");
-
-        Button but = (Button)getView().findViewById(R.id.button);
-        but.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                addTestItem(view);
-            }
-        });
+        getToolbar().setTitle("Tasks");
 
         loadTasks();
+
+        ArrayList<FloatingActionButton> fabs = new ArrayList<>();
+        FloatingActionButton fab = new FloatingActionButton(getContext());
+        fab.setLabelText("Add Task");
+        fab.setOnClickListener(addTask);
+        fabs.add(fab);
+        setFam(fabs);
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater)
+    public void onStop()
     {
-        inflater.inflate(R.menu.main, menu);
-        super.onCreateOptionsMenu(menu, inflater);
+        super.onStop();
+        dbRoot.removeEventListener(taskListDBListener);
     }
 
     private void loadTasks()
     {
-        final TaskAdapter taskAdapter = new TaskAdapter(getContext());
-        ListView lv = (ListView)getView().findViewById(R.id.lvTasks);
-        lv.setAdapter(taskAdapter);
-        lv.setOnItemClickListener(onClick);
+        final TaskAdapter taskAdapter = new TaskAdapter();
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
+
+        RecyclerView rv = (RecyclerView)getView().findViewById(R.id.rvTasks);
+        rv.setLayoutManager(linearLayoutManager);
+        rv.setAdapter(taskAdapter);
+
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(rv.getContext(),
+                linearLayoutManager.getOrientation());
+        rv.addItemDecoration(dividerItemDecoration);
+
+        taskAdapter.getClickSubject()
+                .subscribe(this::switchToTask);
 
         DatabaseReference db = FirebaseDatabase.getInstance().getReference();
-        db.child(Task.TABLE_NAME).addValueEventListener(new ValueEventListener()
+        taskListDBListener = new ValueEventListener()
         {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot)
@@ -90,7 +95,7 @@ public class FragMain extends baseFragment
                     Task task = snap.getValue(Task.class);
                     tasks.add(task);
                 }
-                taskAdapter.updateData(tasks);
+                taskAdapter.update(tasks);
             }
 
             @Override
@@ -98,27 +103,32 @@ public class FragMain extends baseFragment
             {
 
             }
-        });
+        };
+        db.child(Task.TABLE_NAME).addValueEventListener(taskListDBListener);
     }
 
-    private AdapterView.OnItemClickListener onClick = new AdapterView.OnItemClickListener()
+    private void switchToTask(Task task)
     {
-        @Override
-        public void onItemClick(AdapterView<?> adapterView, View view, int i, long l)
-        {
-            Task entry = (Task)adapterView.getItemAtPosition(i);
-            fragmentHelper.switchToFragment(R.id.fragmentContainer, FragTask.newInstance(entry), null);
-        }
+        fragmentHelper.switchToFragment(R.id.fragment_container, FragTask.newInstance(task), null);
+    }
+
+    private View.OnClickListener addTask = v ->
+    {
+        LayoutInflater inflater = getActivity().getLayoutInflater();
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext())
+                .setTitle("Add Task")
+                .setView(inflater.inflate(R.layout.dialog_add_task, null))
+                .setPositiveButton("Add", (dialog, which) -> {
+                    AlertDialog ad = (AlertDialog)dialog;
+                    Log.d(TAG, "Adding Task");
+                    Task task = new Task();
+                    task.setProjectID("1");
+                    task.setTaskID(dbRoot.child(Task.TABLE_NAME).push().getKey());
+                    task.setName(((EditText)ad.findViewById(R.id.txtName)).getText().toString());
+                    task.setDescription(((EditText)ad.findViewById(R.id.txtDescription)).getText().toString());
+                    dbRoot.child(Task.TABLE_NAME).child(task.getTaskID()).setValue(task);
+                })
+                .setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+        builder.show();
     };
-
-    public void addTestItem(View view)
-    {
-        Task test = new Task();
-        test.setProjectID("1");
-        test.setTaskID(dbRoot.child(Task.TABLE_NAME).push().getKey());
-        test.setName("TestName");
-        test.setDescription("TestDescription");
-
-        dbRoot.child(Task.TABLE_NAME).child(test.getTaskID()).setValue(test);
-    }
 }

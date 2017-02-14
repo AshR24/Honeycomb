@@ -64,13 +64,13 @@ public abstract class baseActivity extends AppCompatActivity
                 .withTextColor(Color.BLACK)
                 //.withHeaderBackground(R.drawable.ic_mode_edit_black_24dp)
                 .addProfiles(
-                        new ProfileDrawerItem().withTextColor(Color.BLACK).withName("Ash Reynolds").withEmail("test@test.com").withIcon(R.drawable.ic_mode_edit_black_24dp)
+                        new ProfileDrawerItem().withTextColor(Color.BLACK).withName("Ash Reynolds").withEmail("test@test.com").withIcon(R.drawable.ic_done_black_24dp)
                 )
                 .build();
 
         drawer = new DrawerBuilder()
                 .withActivity(this)
-                .withRootView(R.id.drawer_layout)
+                //.withRootView(R.id.drawer)
                 .withAccountHeader(drawerHeader)
                 .withToolbar(toolbar)
                 .withActionBarDrawerToggle(true)

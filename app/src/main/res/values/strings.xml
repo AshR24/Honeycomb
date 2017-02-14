@@ -4,5 +4,4 @@
     <string name="add_test_item">Add Test Item</string>
     <string name="get_items">Get Items</string>
     <string name="delete_items">Delete Items</string>
-    <string name="title_activity_main">MainActivity</string>
 </resources>

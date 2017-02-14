@@ -1,7 +1,8 @@
 package com.honeycomb.helper.adapters;
 
-import android.content.Context;
-import android.support.annotation.NonNull;
+import android.graphics.Paint;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,67 +16,111 @@ import com.honeycomb.helper.Database.objects.Milestone;
 
 import java.util.ArrayList;
 
+import rx.Observable;
+import rx.subjects.PublishSubject;
+
 /**
  * Created by Ash on 26/01/2017.
  */
 
-public class MilestoneAdapter extends baseAdapter<Milestone>
+public class MilestoneAdapter extends RecyclerView.Adapter<MilestoneAdapter.ViewHolder>
 {
+    public static final String TAG = MilestoneAdapter.class.getSimpleName();
+
+    private final ArrayList<Milestone> items;
+
+    private final PublishSubject<Milestone> onClickSubject = PublishSubject.create();
+
+    public Observable<Milestone> getClickSubject()
+    {
+        return onClickSubject.asObservable();
+    }
+
     DatabaseReference dbRoot = FirebaseDatabase.getInstance().getReference();
 
-    private static class ViewHolder
+    protected class ViewHolder extends RecyclerView.ViewHolder
     {
-        TextView name;
-        CheckBox isCompleted;
-    }
+        public TextView name;
+        public TextView deadline;
+        public CheckBox isCompleted;
 
-    public MilestoneAdapter(Context context)
-    {
-        super(context, R.layout.item_milestone);
-    }
-
-    public MilestoneAdapter(Context context, ArrayList<Milestone> milestones)
-    {
-        super(context, R.layout.item_milestone, milestones);
-    }
-
-    @NonNull
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent)
-    {
-        final ViewHolder viewHolder;
-        if(convertView == null)
+        public ViewHolder(View itemView)
         {
-            convertView = LayoutInflater.from(getContext())
-                    .inflate(R.layout.item_milestone, parent, false);
-
-            viewHolder = new ViewHolder();
-            viewHolder.name = (TextView)convertView.findViewById(R.id.txtName);
-            viewHolder.isCompleted = (CheckBox)convertView.findViewById(R.id.cbCompleted);
-
-            convertView.setTag(viewHolder);
+            super(itemView);
+            name = (TextView)itemView.findViewById(R.id.txtName);
+            deadline = (TextView)itemView.findViewById(R.id.txtDeadline);
+            isCompleted = (CheckBox)itemView.findViewById(R.id.cbCompleted);
         }
-        else { viewHolder = (ViewHolder)convertView.getTag(); }
 
-        Milestone milestone = getItem(position);
-        viewHolder.name.setText(milestone.getName());
-        viewHolder.isCompleted.setOnClickListener(setOnCheckboxClicked(milestone));
-        viewHolder.isCompleted.setChecked(milestone.isCompleted());
-
-        return convertView;
+        public void set(Milestone milestone)
+        {
+            if(milestone != null)
+            {
+                name.setText(milestone.getName());
+                if(milestone.getDeadline() == null)
+                {
+                    deadline.setVisibility(View.INVISIBLE);
+                }
+                else
+                {
+                    deadline.setVisibility(View.VISIBLE);
+                    deadline.setText(milestone.getDeadline());
+                }
+                isCompleted.setChecked(milestone.isCompleted());
+                if(milestone.isCompleted())
+                {
+                    name.setPaintFlags(name.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+                }
+                else
+                {
+                    name.setPaintFlags(name.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
+                }
+                isCompleted.setOnClickListener(setOnCheckboxClicked(milestone));
+            }
+        }
     }
 
-    private View.OnClickListener setOnCheckboxClicked(final Milestone milestone)
+    public MilestoneAdapter()
     {
-        return new View.OnClickListener()
-        {
-            @Override
-            public void onClick(final View view)
-            {
-                CheckBox cb = (CheckBox)view.findViewById(R.id.cbCompleted);
-                milestone.setCompleted(cb.isChecked());
-                dbRoot.child(Milestone.TABLE_NAME).child(milestone.getMilestoneID()).child("completed").setValue(milestone.isCompleted()); // TODO, send in single value or whole object?
-            }
+        items = new ArrayList<>();
+    }
+
+    @Override
+    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType)
+    {
+        final View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_milestone, parent, false);
+        return new MilestoneAdapter.ViewHolder(view);
+    }
+
+    @Override
+    public void onBindViewHolder(ViewHolder holder, int position)
+    {
+        Milestone milestone = items.get(position);
+        holder.set(milestone);
+        holder.itemView.setOnClickListener(v -> onClickSubject.onNext(milestone));
+    }
+
+    @Override
+    public int getItemCount()
+    {
+        return items.size();
+    }
+
+    protected View.OnClickListener setOnCheckboxClicked(final Milestone milestone)
+    {
+        return view -> {
+            CheckBox cb = (CheckBox)view.findViewById(R.id.cbCompleted);
+            milestone.setCompleted(cb.isChecked());
+            dbRoot.child(Milestone.TABLE_NAME).child(milestone.getMilestoneID()).child("completed").setValue(milestone.isCompleted()); // TODO, send in single value or whole object?
         };
+    }
+
+    public void update(ArrayList<Milestone> milestones)
+    {
+        items.clear();
+        items.addAll(milestones);
+        notifyDataSetChanged();
+        Log.d(TAG, "Updated list with " + milestones.size() + " item(s)");
     }
 }

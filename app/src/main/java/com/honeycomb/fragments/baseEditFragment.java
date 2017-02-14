@@ -1,10 +1,12 @@
 package com.honeycomb.fragments;
 
 import android.os.Bundle;
+import android.support.annotation.IdRes;
 import android.support.annotation.Nullable;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.EditText;
 
 import com.honeycomb.R;
 
@@ -14,8 +16,6 @@ import com.honeycomb.R;
 
 public abstract class baseEditFragment extends baseFragment
 {
-    protected boolean isEditMode = false;
-    protected MenuItem actionEdit;
     protected MenuItem actionConfirm;
 
     @Override
@@ -29,9 +29,8 @@ public abstract class baseEditFragment extends baseFragment
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater)
     {
         inflater.inflate(R.menu.edit, menu);
-        actionEdit = menu.findItem(R.id.action_edit);
-        actionConfirm = menu.findItem(R.id.action_confirm);
-        setEditMode(false, false);
+        actionConfirm = menu.findItem(R.id.action_confirm)
+                .setVisible(false);
         super.onCreateOptionsMenu(menu, inflater);
     }
 
@@ -40,25 +39,26 @@ public abstract class baseEditFragment extends baseFragment
     {
         int id = item.getItemId();
 
-        if(id == R.id.action_edit)
+        if(id == R.id.action_confirm)
         {
-            setEditMode(true, false);
-            return true;
-        }
-        else if(id == R.id.action_confirm)
-        {
-            setEditMode(false, true);
+            getView().clearFocus();
             return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    protected void setEditMode(boolean isEditMode, boolean needsUpdate)
+    protected void setEditMode(boolean isEditMode)
     {
-        this.isEditMode = isEditMode;
-        actionEdit.setVisible(!isEditMode);
         actionConfirm.setVisible(isEditMode);
+    }
+
+    protected EditText initEditText(@IdRes int id)
+    {
+        final EditText result = (EditText)getView().findViewById(id);
+        result.setOnFocusChangeListener((view, b) -> setEditMode(b));
+
+        return result;
     }
 
     protected abstract void loadIO();

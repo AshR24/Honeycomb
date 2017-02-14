@@ -6,13 +6,6 @@
           android:orderInCategory="100"
           app:showAsAction="never" />
     <item
-        android:id="@+id/action_edit"
-        android:orderInCategory="200"
-        android:title="Edit"
-        android:icon="@drawable/ic_mode_edit_black_24dp"
-        app:showAsAction="ifRoom">
-    </item>
-    <item
         android:id="@+id/action_confirm"
         android:orderInCategory="200"
         android:title="Confirm"

@@ -1,7 +1,7 @@
 package com.honeycomb.helper.adapters;
 
-import android.content.Context;
-import android.support.annotation.NonNull;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,58 +12,91 @@ import com.honeycomb.helper.Database.objects.Task;
 
 import java.util.ArrayList;
 
+import rx.Observable;
+import rx.subjects.PublishSubject;
+
 /**
- * Created by Ash on 23/01/2017.
+ * Created by Ash on 09/02/2017.
  */
 
-public class TaskAdapter extends baseAdapter<Task>
+public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.ViewHolder>
 {
-    private static class ViewHolder
+    public static final String TAG = TaskAdapter.class.getSimpleName();
+
+    private final ArrayList<Task> items;
+
+    private final PublishSubject<Task> onClickSubject = PublishSubject.create();
+
+    public Observable<Task> getClickSubject()
     {
-        TextView id;
-        TextView name;
-        TextView description;
-        TextView deadline;
+        return onClickSubject.asObservable();
     }
 
-    public TaskAdapter(Context context)
+    protected class ViewHolder extends RecyclerView.ViewHolder
     {
-        super(context, R.layout.item_task);
+        public TextView name;
+        public TextView description;
+        public TextView deadline;
+
+        public ViewHolder(View itemView)
+        {
+            super(itemView);
+            name = (TextView)itemView.findViewById(R.id.txtName);
+            description = (TextView)itemView.findViewById(R.id.txtDescription);
+            deadline = (TextView)itemView.findViewById(R.id.txtDeadline);
+        }
+
+        public void set(Task task)
+        {
+            if(task != null)
+            {
+                name.setText(task.getName());
+                description.setText(task.getDescription());
+                if(task.getDeadline() == null)
+                {
+                    deadline.setVisibility(View.INVISIBLE);
+                }
+                else
+                {
+                    deadline.setVisibility(View.VISIBLE);
+                    deadline.setText(task.getDeadline());
+                }
+            }
+        }
     }
 
-    public TaskAdapter(Context context, ArrayList<Task> tasks)
+    public TaskAdapter()
     {
-        super(context, R.layout.item_task, tasks);
+        items = new ArrayList<>();
     }
 
-    @NonNull
     @Override
-    public View getView(int position, View convertView, ViewGroup parent)
+    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType)
     {
-        final ViewHolder viewHolder;
-        if(convertView == null)
-        {
-            convertView = LayoutInflater.from(getContext())
-                    .inflate(R.layout.item_task, parent, false);
+        final View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_task, parent, false);
+        return new ViewHolder(view);
+    }
 
-            viewHolder = new ViewHolder();
-            viewHolder.id = (TextView)convertView.findViewById(R.id.txtID);
-            viewHolder.name = (TextView)convertView.findViewById(R.id.txtName);
-            viewHolder.description = (TextView)convertView.findViewById(R.id.txtDescription);
-            viewHolder.deadline = (TextView)convertView.findViewById(R.id.txtDeadline);
+    @Override
+    public void onBindViewHolder(ViewHolder holder, final int position)
+    {
+        Task task = items.get(position);
+        holder.set(task);
+        holder.itemView.setOnClickListener(v -> onClickSubject.onNext(task));
+    }
 
-            convertView.setTag(viewHolder);
-        }
-        else
-        {
-            viewHolder = (ViewHolder)convertView.getTag();
-        }
+    @Override
+    public int getItemCount()
+    {
+        return items.size();
+    }
 
-        Task task = getItem(position);
-        viewHolder.id.setText(task.getTaskID());
-        viewHolder.name.setText(task.getName() + ":");
-        viewHolder.description.setText(task.getDescription());
-
-        return convertView;
+    public void update(ArrayList<Task> tasks)
+    {
+        items.clear();
+        items.addAll(tasks);
+        notifyDataSetChanged();
+        Log.d(TAG, "Updated list with " + tasks.size() + " item(s)");
     }
 }

@@ -12,6 +12,7 @@ public class Task
     private String taskID;
     private String name;
     private String description;
+    private String deadline;
 
     public String getProjectID() { return projectID; }
     public void setProjectID(String projectID) { this.projectID = projectID; }
@@ -21,6 +22,9 @@ public class Task
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
+
+    public String getDeadline() { return deadline; }
+    public void setDeadline(String deadline) { this.deadline = deadline; }
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
