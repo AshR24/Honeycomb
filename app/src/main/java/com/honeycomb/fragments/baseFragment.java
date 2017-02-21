@@ -10,9 +10,8 @@ import android.view.MenuInflater;
 
 import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.honeycomb.R;
+import com.honeycomb.helper.Database.Database;
 import com.honeycomb.helper.FragmentHelper;
 
 import java.util.ArrayList;
@@ -26,7 +25,7 @@ public abstract class baseFragment extends Fragment
     protected final String TAG = this.getClass().getSimpleName();
 
     protected FragmentHelper fragmentHelper;
-    protected DatabaseReference dbRoot;
+    protected Database db;
 
     protected FloatingActionMenu fam;
     protected ArrayList<FloatingActionButton> fabs;
@@ -41,9 +40,16 @@ public abstract class baseFragment extends Fragment
     {
         super.onActivityCreated(savedInstanceState);
         fragmentHelper = new FragmentHelper(getActivity());
-        dbRoot = FirebaseDatabase.getInstance().getReference();
+        db = new Database();
         setHasOptionsMenu(true);
         initFam();
+    }
+
+    @Override
+    public void onStop()
+    {
+        super.onStop();
+        db.clearEventListeners(this.getClass().getSimpleName());
     }
 
     private void initFam()

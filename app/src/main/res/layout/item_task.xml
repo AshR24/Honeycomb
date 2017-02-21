@@ -36,13 +36,13 @@
         android:id="@+id/txtDeadline"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginRight="0dp"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="0dp"
         android:drawableStart="@drawable/ic_schedule_black_24dp"
         android:text="Deadline"
         android:textAlignment="center"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/txtName"
-        android:layout_marginTop="0dp"
-        android:layout_marginLeft="0dp"
-        android:layout_marginStart="0dp"/>
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/txtName"/>
 
 </android.support.constraint.ConstraintLayout>

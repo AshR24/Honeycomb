@@ -41,7 +41,6 @@ dependencies {
     compile 'com.github.clans:fab:1.6.4' // https://github.com/Clans/FloatingActionButton
     compile 'io.reactivex:rxjava:1.2.6' // https://github.com/ReactiveX/RxJava
     compile 'joda-time:joda-time:2.9.7' // http://www.joda.org/joda-time/
-
 }
 
 

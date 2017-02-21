@@ -9,6 +9,9 @@ import android.widget.TextView;
 
 import com.honeycomb.R;
 import com.honeycomb.helper.Database.objects.Task;
+import com.honeycomb.helper.Time;
+
+import org.joda.time.DateTime;
 
 import java.util.ArrayList;
 
@@ -54,12 +57,12 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.ViewHolder>
                 description.setText(task.getDescription());
                 if(task.getDeadline() == null)
                 {
-                    deadline.setVisibility(View.INVISIBLE);
+                    deadline.setVisibility(View.GONE);
                 }
                 else
                 {
                     deadline.setVisibility(View.VISIBLE);
-                    deadline.setText(task.getDeadline());
+                    deadline.setText(Time.untilDeadline(new DateTime(task.getDeadline())));
                 }
             }
         }

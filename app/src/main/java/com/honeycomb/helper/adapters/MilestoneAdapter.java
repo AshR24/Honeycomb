@@ -13,6 +13,9 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.honeycomb.R;
 import com.honeycomb.helper.Database.objects.Milestone;
+import com.honeycomb.helper.Time;
+
+import org.joda.time.DateTime;
 
 import java.util.ArrayList;
 
@@ -59,12 +62,12 @@ public class MilestoneAdapter extends RecyclerView.Adapter<MilestoneAdapter.View
                 name.setText(milestone.getName());
                 if(milestone.getDeadline() == null)
                 {
-                    deadline.setVisibility(View.INVISIBLE);
+                    deadline.setVisibility(View.GONE);
                 }
                 else
                 {
+                    deadline.setText(Time.untilDeadline(new DateTime(milestone.getDeadline())));
                     deadline.setVisibility(View.VISIBLE);
-                    deadline.setText(milestone.getDeadline());
                 }
                 isCompleted.setChecked(milestone.isCompleted());
                 if(milestone.isCompleted())

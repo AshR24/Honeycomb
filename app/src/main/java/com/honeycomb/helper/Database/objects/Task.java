@@ -1,5 +1,7 @@
 package com.honeycomb.helper.Database.objects;
 
+import org.joda.time.DateTime;
+
 /**
  * Created by Ash on 30/01/2017.
  */
@@ -25,6 +27,7 @@ public class Task
 
     public String getDeadline() { return deadline; }
     public void setDeadline(String deadline) { this.deadline = deadline; }
+    public DateTime getDeadlineAsDateTime() { return new DateTime(deadline); }
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }

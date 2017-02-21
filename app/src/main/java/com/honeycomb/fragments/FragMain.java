@@ -16,9 +16,9 @@ import com.github.clans.fab.FloatingActionButton;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.honeycomb.R;
+import com.honeycomb.helper.Database.Database;
 import com.honeycomb.helper.Database.objects.Task;
 import com.honeycomb.helper.adapters.TaskAdapter;
 
@@ -30,8 +30,6 @@ import java.util.ArrayList;
 
 public class FragMain extends baseFragment
 {
-    private ValueEventListener taskListDBListener;
-
     public static FragMain newInstance()
     {
         return new FragMain();
@@ -60,13 +58,6 @@ public class FragMain extends baseFragment
         setFam(fabs);
     }
 
-    @Override
-    public void onStop()
-    {
-        super.onStop();
-        dbRoot.removeEventListener(taskListDBListener);
-    }
-
     private void loadTasks()
     {
         final TaskAdapter taskAdapter = new TaskAdapter();
@@ -83,8 +74,8 @@ public class FragMain extends baseFragment
         taskAdapter.getClickSubject()
                 .subscribe(this::switchToTask);
 
-        DatabaseReference db = FirebaseDatabase.getInstance().getReference();
-        taskListDBListener = new ValueEventListener()
+        DatabaseReference dbRef = Database.root.child(Task.TABLE_NAME);
+        db.addValueEventListener(TAG, dbRef, new ValueEventListener()
         {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot)
@@ -103,8 +94,7 @@ public class FragMain extends baseFragment
             {
 
             }
-        };
-        db.child(Task.TABLE_NAME).addValueEventListener(taskListDBListener);
+        });
     }
 
     private void switchToTask(Task task)
@@ -123,10 +113,13 @@ public class FragMain extends baseFragment
                     Log.d(TAG, "Adding Task");
                     Task task = new Task();
                     task.setProjectID("1");
-                    task.setTaskID(dbRoot.child(Task.TABLE_NAME).push().getKey());
+                    task.setTaskID(db.addNew(Database.root.child(Task.TABLE_NAME)));
                     task.setName(((EditText)ad.findViewById(R.id.txtName)).getText().toString());
                     task.setDescription(((EditText)ad.findViewById(R.id.txtDescription)).getText().toString());
-                    dbRoot.child(Task.TABLE_NAME).child(task.getTaskID()).setValue(task);
+
+                    Database.root.child(Task.TABLE_NAME)
+                            .child(task.getTaskID())
+                            .setValue(task);
                 })
                 .setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
         builder.show();
