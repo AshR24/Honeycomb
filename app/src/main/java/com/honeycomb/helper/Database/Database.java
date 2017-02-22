@@ -43,9 +43,4 @@ public class Database
         }
         valueEventListeners.clear();
     }
-
-    public String addNew(DatabaseReference dbRef)
-    {
-        return dbRef.push().getKey();
-    }
 }

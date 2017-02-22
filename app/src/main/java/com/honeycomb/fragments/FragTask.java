@@ -41,19 +41,19 @@ import java.util.ArrayList;
 
 public class FragTask extends baseEditFragment
 {
-    private static Task currentTask;
+    private static Task sCurrentTask;
 
-    private EditText txtName;
-    private EditText txtDescription;
-    private LinearLayout llDeadline;
-    private TextView txtDeadline;
-    private LinearLayout llMilestones;
-    private RecyclerView rvMilestones;
+    private EditText mTxtName;
+    private EditText mTxtDescription;
+    private LinearLayout mLlDeadline;
+    private TextView mTxtDeadline;
+    private LinearLayout mLlMilestone;
+    private RecyclerView mRvMilestones;
 
     public static FragTask newInstance(@Nullable Task task)
     {
         FragTask newFragment = new FragTask();
-        currentTask = task;
+        sCurrentTask = task;
         return newFragment;
     }
 
@@ -80,7 +80,7 @@ public class FragTask extends baseEditFragment
         fabs.add(fab);
 
         FloatingActionButton fabAddDeadline = new FloatingActionButton(getContext());
-        if(currentTask.getDeadline() == null) { fabAddDeadline.setLabelText("Add Deadline"); }
+        if(sCurrentTask.getDeadline() == null) { fabAddDeadline.setLabelText("Add Deadline"); }
         else { fabAddDeadline.setLabelText("Change Deadline"); }
         fabAddDeadline.setOnClickListener(addDeadline);
         fabs.add(fabAddDeadline);
@@ -94,50 +94,50 @@ public class FragTask extends baseEditFragment
         super.setEditMode(isEditMode);
         if(!isEditMode)
         {
-            currentTask.setName(txtName.getText().toString());
-            currentTask.setDescription(txtDescription.getText().toString());
+            sCurrentTask.setName(mTxtName.getText().toString());
+            sCurrentTask.setDescription(mTxtDescription.getText().toString());
             Database.root.child(Task.TABLE_NAME)
-                    .child(currentTask.getTaskID())
-                    .setValue(currentTask);
+                    .child(sCurrentTask.getTaskID())
+                    .setValue(sCurrentTask);
             Log.d(TAG, "Saved Task");
         }
     }
 
     protected void loadIO()
     {
-        txtName = initEditText(R.id.txtName);
-        txtDescription = initEditText(R.id.txtDescription);
+        mTxtName = initEditText(R.id.txtName);
+        mTxtDescription = initEditText(R.id.txtDescription);
 
-        llDeadline = (LinearLayout)getView().findViewById(R.id.llDeadline);
-        llDeadline.setVisibility(View.GONE);
-        txtDeadline = (TextView)getView().findViewById(R.id.txtDeadline);
+        mLlDeadline = (LinearLayout)getView().findViewById(R.id.llDeadline);
+        mLlDeadline.setVisibility(View.GONE);
+        mTxtDeadline = (TextView)getView().findViewById(R.id.txtDeadline);
 
-        llMilestones = (LinearLayout)getView().findViewById(R.id.llMilestones);
-        llMilestones.setVisibility(View.GONE);
-        rvMilestones = (RecyclerView)getView().findViewById(R.id.rvMilestones);
+        mLlMilestone = (LinearLayout)getView().findViewById(R.id.llMilestones);
+        mLlMilestone.setVisibility(View.GONE);
+        mRvMilestones = (RecyclerView)getView().findViewById(R.id.rvMilestones);
     }
 
     private void loadTask()
     {
         DatabaseReference dbRef = Database.root.child(Task.TABLE_NAME)
-                .child(currentTask.getTaskID());
+                .child(sCurrentTask.getTaskID());
         db.addValueEventListener(TAG, dbRef, new ValueEventListener()
         {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot)
             {
-                currentTask = dataSnapshot.getValue(Task.class);
-                txtName.setText(currentTask.getName());
-                txtDescription.setText(currentTask.getDescription());
+                sCurrentTask = dataSnapshot.getValue(Task.class);
+                mTxtName.setText(sCurrentTask.getName());
+                mTxtDescription.setText(sCurrentTask.getDescription());
 
-                if(currentTask.getDeadline() == null)
+                if(sCurrentTask.getDeadline() == null)
                 {
-                    llDeadline.setVisibility(View.GONE);
+                    mLlDeadline.setVisibility(View.GONE);
                 }
                 else
                 {
-                    txtDeadline.setText(Time.toWordyReadable(new DateTime(currentTask.getDeadline())));
-                    llDeadline.setVisibility(View.VISIBLE);
+                    mTxtDeadline.setText(Time.toWordyReadable(new DateTime(sCurrentTask.getDeadline())));
+                    mLlDeadline.setVisibility(View.VISIBLE);
                 }
             }
 
@@ -151,19 +151,19 @@ public class FragTask extends baseEditFragment
         final MilestoneAdapter milestoneAdapter = new MilestoneAdapter();
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
 
-        rvMilestones.setLayoutManager(linearLayoutManager);
-        rvMilestones.setAdapter(milestoneAdapter);
+        mRvMilestones.setLayoutManager(linearLayoutManager);
+        mRvMilestones.setAdapter(milestoneAdapter);
 
-        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(rvMilestones.getContext(),
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(mRvMilestones.getContext(),
                 linearLayoutManager.getOrientation());
-        rvMilestones.addItemDecoration(dividerItemDecoration);
+        mRvMilestones.addItemDecoration(dividerItemDecoration);
 
         milestoneAdapter.getClickSubject()
                 .subscribe(this::switchToMilestone);
 
         Query queryRef = Database.root.child(Milestone.TABLE_NAME)
                 .orderByChild("taskID")
-                .equalTo(currentTask.getTaskID());
+                .equalTo(sCurrentTask.getTaskID());
 
         db.addValueEventListener(TAG, queryRef, new ValueEventListener()
         {
@@ -177,8 +177,8 @@ public class FragTask extends baseEditFragment
                     milestones.add(milestone);
                 }
                 milestoneAdapter.update(milestones);
-                if(milestones.size() == 0) { llMilestones.setVisibility(View.GONE); }
-                else { llMilestones.setVisibility(View.VISIBLE); }
+                if(milestones.size() == 0) { mLlMilestone.setVisibility(View.GONE); }
+                else { mLlMilestone.setVisibility(View.VISIBLE); }
             }
 
             @Override
@@ -193,7 +193,7 @@ public class FragTask extends baseEditFragment
 
     private View.OnClickListener addDeadline = v ->
     {
-        final DateTime[] dateTime = {currentTask.getDeadline() == null ? new DateTime() : currentTask.getDeadlineAsDateTime()};
+        final DateTime[] dateTime = {sCurrentTask.getDeadline() == null ? new DateTime() : new DateTime(sCurrentTask.getDeadline())};
 
         LayoutInflater inflater = getActivity().getLayoutInflater();
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext())
@@ -214,12 +214,7 @@ public class FragTask extends baseEditFragment
             {
                 new DatePickerDialog(getContext(), (view, year, monthOfYear, dayOfMonth) ->
                 {
-                    currentTask.setDeadline(Time.dateTimeWithNewDate(currentTask.getDeadlineAsDateTime(), year, monthOfYear + 1, dayOfMonth).toString());
-                    Database.root.child(Task.TABLE_NAME)
-                            .child(currentTask.getTaskID())
-                            .child("deadline")
-                            .setValue(currentTask.getDeadline());
-                    dateTime[0] = currentTask.getDeadlineAsDateTime();
+                    dateTime[0] = changeDeadline(year, monthOfYear + 1, dayOfMonth, dateTime[0].getHourOfDay(), dateTime[0].getMinuteOfHour());
                 }, dateTime[0].getYear(), dateTime[0].getMonthOfYear() - 1, dateTime[0].getDayOfMonth()).show();
             }
         });
@@ -240,11 +235,11 @@ public class FragTask extends baseEditFragment
     private DateTime changeDeadline(int year, int month, int day, int hour, int minute)
     {
         DateTime newDT = new DateTime(year, month, day, hour, minute);
-        currentTask.setDeadline(newDT.toString());
+        sCurrentTask.setDeadline(newDT.toString());
         Database.root.child(Task.TABLE_NAME)
-                .child(currentTask.getTaskID())
+                .child(sCurrentTask.getTaskID())
                 .child("deadline")
-                .setValue(currentTask.getDeadline());
+                .setValue(sCurrentTask.getDeadline());
         return newDT;
     }
 
@@ -257,13 +252,18 @@ public class FragTask extends baseEditFragment
                 .setPositiveButton("Add", (dialog, which) -> {
                     AlertDialog ad = (AlertDialog)dialog;
                     Log.d(TAG, "Adding Milestone");
-                    Milestone milestone = new Milestone();
-                    milestone.setTaskID(currentTask.getTaskID());
-                    milestone.setMilestoneID(Database.root.child(Milestone.TABLE_NAME).push().getKey());
-                    milestone.setName(((EditText)ad.findViewById(R.id.txtName)).getText().toString());
-                    milestone.setDescription(((EditText)ad.findViewById(R.id.txtDescription)).getText().toString());
-                    milestone.setCompleted(false);
-                    Database.root.child(Milestone.TABLE_NAME).child(milestone.getMilestoneID()).setValue(milestone);
+
+                    Milestone m = new Milestone(sCurrentTask.getTaskID(),
+                            null,
+                            ((EditText)ad.findViewById(R.id.txtName)).getText().toString(),
+                            ((EditText)ad.findViewById(R.id.txtDescription)).getText().toString(),
+                            null,
+                            false);
+
+                    m.setMilestoneID(Database.root.child(Milestone.TABLE_NAME).push().getKey());
+                    Database.root.child(Milestone.TABLE_NAME)
+                            .child(m.getMilestoneID())
+                            .setValue(m);
                 })
                 .setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
         builder.show();

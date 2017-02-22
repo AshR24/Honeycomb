@@ -77,14 +77,4 @@ public class Time
 
         return dtFormatter.print(dateTime);
     }
-
-    public static DateTime dateTimeWithNewDate(DateTime original, int year, int month, int day)
-    {
-        return new DateTime(year, month, day, original.getHourOfDay(), original.getMinuteOfHour());
-    }
-
-    public static DateTime dateTimeWithNewTime(DateTime original, int hour, int minute)
-    {
-        return new DateTime(original.getYear(), original.getMonthOfYear(), original.getDayOfMonth(), hour, minute);
-    }
 }

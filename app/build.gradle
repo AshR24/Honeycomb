@@ -1,12 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 'Google Inc.:Google APIs:23'
+    compileSdkVersion 25
     buildToolsVersion '25.0.2'
 
     defaultConfig {
         applicationId "com.ash.honeycomb"
-        minSdkVersion 14
+        minSdkVersion 16
         targetSdkVersion 25
         versionCode 1
         versionName "1.0"
@@ -29,19 +29,28 @@ android {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile "com.android.support:support-core-utils:25.1.1"
+    compile "com.android.support:support-core-utils:25.2.0"
     compile 'com.android.support.constraint:constraint-layout:1.0.0-beta5'
 
+    // Firebase
+    //compile 'com.google.android.gms:play-services:10.0.1'
+    compile "com.google.firebase:firebase-auth:10.0.1"
     compile 'com.google.firebase:firebase-database:10.0.1'
+
+    // Firebase ui
+    compile 'com.firebaseui:firebase-ui-auth:1.0.1'
+    compile 'com.firebaseui:firebase-ui-database:1.0.1'
 
     compile('com.mikepenz:materialdrawer:5.8.1@aar') {
         // https://github.com/mikepenz/MaterialDrawer http://mikepenz.github.io/MaterialDrawer/
         transitive = true
     }
-    compile 'com.github.clans:fab:1.6.4' // https://github.com/Clans/FloatingActionButton
-    compile 'io.reactivex:rxjava:1.2.6' // https://github.com/ReactiveX/RxJava
-    compile 'joda-time:joda-time:2.9.7' // http://www.joda.org/joda-time/
+    compile 'com.github.clans:fab:1.6.4'
+    // https://github.com/Clans/FloatingActionButton
+    compile 'io.reactivex:rxjava:1.2.6'
+    // https://github.com/ReactiveX/RxJava
+    compile 'joda-time:joda-time:2.9.7'
+    // http://www.joda.org/joda-time/
 }
-
 
 apply plugin: 'com.google.gms.google-services'

@@ -111,15 +111,17 @@ public class FragMain extends baseFragment
                 .setPositiveButton("Add", (dialog, which) -> {
                     AlertDialog ad = (AlertDialog)dialog;
                     Log.d(TAG, "Adding Task");
-                    Task task = new Task();
-                    task.setProjectID("1");
-                    task.setTaskID(db.addNew(Database.root.child(Task.TABLE_NAME)));
-                    task.setName(((EditText)ad.findViewById(R.id.txtName)).getText().toString());
-                    task.setDescription(((EditText)ad.findViewById(R.id.txtDescription)).getText().toString());
 
+                    Task t = new Task("1",
+                            null,
+                            ((EditText)ad.findViewById(R.id.txtName)).getText().toString(),
+                            ((EditText)ad.findViewById(R.id.txtDescription)).getText().toString(),
+                            null);
+
+                    t.setTaskID(Database.root.child(Task.TABLE_NAME).push().getKey());
                     Database.root.child(Task.TABLE_NAME)
-                            .child(task.getTaskID())
-                            .setValue(task);
+                            .child(t.getTaskID())
+                            .setValue(t);
                 })
                 .setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
         builder.show();

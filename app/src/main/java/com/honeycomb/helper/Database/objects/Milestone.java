@@ -8,28 +8,39 @@ public class Milestone
 {
     public static final String TABLE_NAME = "Milestone";
 
-    private String taskID;
-    private String milestoneID;
-    private String name;
-    private String description;
-    private String deadline;
-    private boolean isCompleted;
+    private String mTaskID;
+    private String mMilestoneID;
+    private String mName;
+    private String mDescription;
+    private String mDeadline;
+    private boolean mIsCompleted;
 
-    public String getTaskID() { return taskID; }
-    public void setTaskID(String taskID) { this.taskID = taskID; }
+    public Milestone() { } // Needed by Firebase
+    public Milestone(String taskID, String milestoneID, String name, String description, String deadline, Boolean isCompleted)
+    {
+        mTaskID = taskID;
+        mMilestoneID = milestoneID;
+        mName = name;
+        mDescription = description;
+        mDeadline = deadline;
+        mIsCompleted = isCompleted;
+    }
 
-    public String getMilestoneID() { return milestoneID; }
-    public void setMilestoneID(String milestoneID) { this.milestoneID = milestoneID; }
+    public String getTaskID() { return mTaskID; }
+    public void setTaskID(String taskID) { mTaskID = taskID; }
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public String getMilestoneID() { return mMilestoneID; }
+    public void setMilestoneID(String milestoneID) { mMilestoneID = milestoneID; }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+    public String getName() { return mName; }
+    public void setName(String name) { mName = name; }
 
-    public String getDeadline() { return deadline; }
-    public void setDeadline(String deadline) { this.deadline = deadline; }
+    public String getDescription() { return mDescription; }
+    public void setDescription(String description) { mDescription = description; }
 
-    public boolean isCompleted() { return isCompleted; }
-    public void setCompleted(boolean isCompleted) { this.isCompleted = isCompleted; }
+    public String getDeadline() { return mDeadline; }
+    public void setDeadline(String deadline) { mDeadline = deadline; }
+
+    public boolean isCompleted() { return mIsCompleted; }
+    public void setCompleted(boolean isCompleted) { mIsCompleted = isCompleted; }
 }

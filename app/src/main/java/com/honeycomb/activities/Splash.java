@@ -13,6 +13,11 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 
+import com.firebase.ui.auth.AuthUI;
+import com.google.firebase.auth.FirebaseAuth;
+
+import java.util.Arrays;
+
 /**
  * Splash Activity is the start-up activity that appears until a delay is expired
  * or the user taps the screen.  When the splash activity starts, various app
@@ -20,11 +25,23 @@ import android.support.v7.app.AppCompatActivity;
  */
 public class Splash extends AppCompatActivity
 {
+    private static final int RC_SIGN_IN = 2452;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-
+        System.out.println("do");
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        if(auth.getCurrentUser() == null)
+        {
+            startActivityForResult(
+                    AuthUI.getInstance()
+                            .createSignInIntentBuilder()
+                            .setProviders(Arrays.asList(new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build()))
+                            .build()
+                    , RC_SIGN_IN);
+        }
         startActivity(new Intent(this, Main.class));
         finish();
     }

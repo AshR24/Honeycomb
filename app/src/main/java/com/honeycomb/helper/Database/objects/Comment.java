@@ -8,24 +8,34 @@ public class Comment
 {
     public static final String TABLE_NAME = "Comment";
 
-    private String milestoneID;
-    private String commentID;
-    private String userID;
-    private String comment;
-    private String datePosted;
+    private String mMilestoneID;
+    private String mCommentID;
+    private String mUserID;
+    private String mComment;
+    private String mDatePosted;
 
-    public String getMilestoneID() { return milestoneID; }
-    public void setMilestoneID(String milestoneID) { this.milestoneID = milestoneID; }
+    public Comment() { } // Needed by Firebase
+    public Comment(String milestoneID, String commentID, String userID, String comment, String datePosted)
+    {
+        mMilestoneID = milestoneID;
+        mCommentID = commentID;
+        mUserID = userID;
+        mComment = comment;
+        mDatePosted = datePosted;
+    }
 
-    public String getCommentID() { return commentID; }
-    public void setCommentID(String commentID) { this.commentID = commentID; }
+    public String getMilestoneID() { return mMilestoneID; }
+    public void setMilestoneID(String milestoneID) { mMilestoneID = milestoneID; }
 
-    public String getUserID() { return userID; }
-    public void setUserID(String userID) { this.userID = userID; }
+    public String getCommentID() { return mCommentID; }
+    public void setCommentID(String commentID) { mCommentID = commentID; }
 
-    public String getComment() { return comment; }
-    public void setComment(String comment) { this.comment = comment; }
+    public String getUserID() { return mUserID; }
+    public void setUserID(String userID) { mUserID = userID; }
 
-    public String getDatePosted() { return datePosted; }
-    public void setDatePosted(String datePosted) { this.datePosted = datePosted; }
+    public String getComment() { return mComment; }
+    public void setComment(String comment) { mComment = comment; }
+
+    public String getDatePosted() { return mDatePosted; }
+    public void setDatePosted(String datePosted) { mDatePosted = datePosted; }
 }

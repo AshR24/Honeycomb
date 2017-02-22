@@ -57,7 +57,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.ViewHolder>
                 description.setText(task.getDescription());
                 if(task.getDeadline() == null)
                 {
-                    deadline.setVisibility(View.GONE);
+                    deadline.setVisibility(View.INVISIBLE);
                 }
                 else
                 {

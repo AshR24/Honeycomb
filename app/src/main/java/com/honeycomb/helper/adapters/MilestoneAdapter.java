@@ -62,7 +62,7 @@ public class MilestoneAdapter extends RecyclerView.Adapter<MilestoneAdapter.View
                 name.setText(milestone.getName());
                 if(milestone.getDeadline() == null)
                 {
-                    deadline.setVisibility(View.GONE);
+                    deadline.setVisibility(View.INVISIBLE);
                 }
                 else
                 {
