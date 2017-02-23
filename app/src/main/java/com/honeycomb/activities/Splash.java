@@ -12,8 +12,11 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
+import com.firebase.ui.auth.IdpResponse;
+import com.firebase.ui.auth.ui.ResultCodes;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.Arrays;
@@ -38,11 +41,48 @@ public class Splash extends AppCompatActivity
             startActivityForResult(
                     AuthUI.getInstance()
                             .createSignInIntentBuilder()
+                            //.setTheme(R.style.Apheme)
                             .setProviders(Arrays.asList(new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build()))
                             .build()
                     , RC_SIGN_IN);
         }
-        startActivity(new Intent(this, Main.class));
-        finish();
+        else
+        {
+            startActivity(new Intent(this, Main.class));
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if(requestCode == RC_SIGN_IN)
+        {
+            IdpResponse response = IdpResponse.fromResultIntent(data);
+
+            if(resultCode == RESULT_OK)
+            {
+                Toast.makeText(this, "Success", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(this, Main.class));
+                finish();
+                return;
+            }
+            else
+            {
+                if(response == null)
+                {
+                    Toast.makeText(this, "Cancel", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                else if(resultCode == ResultCodes.RESULT_NO_NETWORK)
+                {
+                    Toast.makeText(this, "Cancel", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+            }
+        }
+        Toast.makeText(this, "Unknown Error", Toast.LENGTH_SHORT).show();
     }
 }
+

@@ -23,7 +23,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
 {
     public static final String TAG = CommentAdapter.class.getSimpleName();
 
-    private final ArrayList<Comment> items;
+    private final ArrayList<Comment> mItems;
 
     protected class ViewHolder extends RecyclerView.ViewHolder
     {
@@ -49,7 +49,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
 
     public CommentAdapter()
     {
-        items = new ArrayList<>();
+        mItems = new ArrayList<>();
     }
 
     @Override
@@ -63,7 +63,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
     @Override
     public void onBindViewHolder(ViewHolder holder, int position)
     {
-        Comment comment = items.get(position);
+        Comment comment = mItems.get(position);
         holder.set(comment);
         //holder.itemView.setOnClickListener(v -> onClickSubject.onNext(milestone));
     }
@@ -71,13 +71,13 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
     @Override
     public int getItemCount()
     {
-        return items.size();
+        return mItems.size();
     }
 
     public void update(ArrayList<Comment> comments)
     {
-        items.clear();
-        items.addAll(comments);
+        mItems.clear();
+        mItems.addAll(comments);
         notifyDataSetChanged();
         Log.d(TAG, "Updated list with " + comments.size() + " item(s)");
     }

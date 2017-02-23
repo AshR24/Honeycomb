@@ -29,6 +29,7 @@ android {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
+    //  Android Core
     compile "com.android.support:support-core-utils:25.2.0"
     compile 'com.android.support.constraint:constraint-layout:1.0.0-beta5'
 
@@ -41,16 +42,16 @@ dependencies {
     compile 'com.firebaseui:firebase-ui-auth:1.0.1'
     compile 'com.firebaseui:firebase-ui-database:1.0.1'
 
-    compile('com.mikepenz:materialdrawer:5.8.1@aar') {
-        // https://github.com/mikepenz/MaterialDrawer http://mikepenz.github.io/MaterialDrawer/
-        transitive = true
-    }
-    compile 'com.github.clans:fab:1.6.4'
+    // https://github.com/mikepenz/MaterialDrawer
+    compile('com.mikepenz:materialdrawer:5.8.1@aar') { transitive = true }
     // https://github.com/Clans/FloatingActionButton
-    compile 'io.reactivex:rxjava:1.2.6'
+    compile 'com.github.clans:fab:1.6.4'
     // https://github.com/ReactiveX/RxJava
-    compile 'joda-time:joda-time:2.9.7'
+    compile 'io.reactivex:rxjava:1.2.6'
     // http://www.joda.org/joda-time/
+    compile 'joda-time:joda-time:2.9.7'
+    // https://github.com/hootsuite/nachos
+    compile "com.hootsuite.android:nachos:1.0.0"
 }
 
 apply plugin: 'com.google.gms.google-services'

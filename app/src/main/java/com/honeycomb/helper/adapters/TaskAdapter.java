@@ -7,6 +7,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.honeycomb.R;
 import com.honeycomb.helper.Database.objects.Task;
 import com.honeycomb.helper.Time;
@@ -26,13 +28,13 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.ViewHolder>
 {
     public static final String TAG = TaskAdapter.class.getSimpleName();
 
-    private final ArrayList<Task> items;
-
-    private final PublishSubject<Task> onClickSubject = PublishSubject.create();
+    private final ArrayList<Task> mItems;
+    private final PublishSubject<Task> mOnClickSubject = PublishSubject.create();
+    private DatabaseReference mDbRoot = FirebaseDatabase.getInstance().getReference();
 
     public Observable<Task> getClickSubject()
     {
-        return onClickSubject.asObservable();
+        return mOnClickSubject.asObservable();
     }
 
     protected class ViewHolder extends RecyclerView.ViewHolder
@@ -70,7 +72,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.ViewHolder>
 
     public TaskAdapter()
     {
-        items = new ArrayList<>();
+        mItems = new ArrayList<>();
     }
 
     @Override
@@ -84,21 +86,21 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.ViewHolder>
     @Override
     public void onBindViewHolder(ViewHolder holder, final int position)
     {
-        Task task = items.get(position);
+        Task task = mItems.get(position);
         holder.set(task);
-        holder.itemView.setOnClickListener(v -> onClickSubject.onNext(task));
+        holder.itemView.setOnClickListener(v -> mOnClickSubject.onNext(task));
     }
 
     @Override
     public int getItemCount()
     {
-        return items.size();
+        return mItems.size();
     }
 
     public void update(ArrayList<Task> tasks)
     {
-        items.clear();
-        items.addAll(tasks);
+        mItems.clear();
+        mItems.addAll(tasks);
         notifyDataSetChanged();
         Log.d(TAG, "Updated list with " + tasks.size() + " item(s)");
     }

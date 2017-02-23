@@ -30,16 +30,14 @@ public class MilestoneAdapter extends RecyclerView.Adapter<MilestoneAdapter.View
 {
     public static final String TAG = MilestoneAdapter.class.getSimpleName();
 
-    private final ArrayList<Milestone> items;
-
-    private final PublishSubject<Milestone> onClickSubject = PublishSubject.create();
+    private final ArrayList<Milestone> mItems;
+    private final PublishSubject<Milestone> mOnClickSubject = PublishSubject.create();
+    private DatabaseReference mDbRoot = FirebaseDatabase.getInstance().getReference();
 
     public Observable<Milestone> getClickSubject()
     {
-        return onClickSubject.asObservable();
+        return mOnClickSubject.asObservable();
     }
-
-    DatabaseReference dbRoot = FirebaseDatabase.getInstance().getReference();
 
     protected class ViewHolder extends RecyclerView.ViewHolder
     {
@@ -85,7 +83,7 @@ public class MilestoneAdapter extends RecyclerView.Adapter<MilestoneAdapter.View
 
     public MilestoneAdapter()
     {
-        items = new ArrayList<>();
+        mItems = new ArrayList<>();
     }
 
     @Override
@@ -99,15 +97,15 @@ public class MilestoneAdapter extends RecyclerView.Adapter<MilestoneAdapter.View
     @Override
     public void onBindViewHolder(ViewHolder holder, int position)
     {
-        Milestone milestone = items.get(position);
+        Milestone milestone = mItems.get(position);
         holder.set(milestone);
-        holder.itemView.setOnClickListener(v -> onClickSubject.onNext(milestone));
+        holder.itemView.setOnClickListener(v -> mOnClickSubject.onNext(milestone));
     }
 
     @Override
     public int getItemCount()
     {
-        return items.size();
+        return mItems.size();
     }
 
     protected View.OnClickListener setOnCheckboxClicked(final Milestone milestone)
@@ -115,14 +113,14 @@ public class MilestoneAdapter extends RecyclerView.Adapter<MilestoneAdapter.View
         return view -> {
             CheckBox cb = (CheckBox)view.findViewById(R.id.cbCompleted);
             milestone.setCompleted(cb.isChecked());
-            dbRoot.child(Milestone.TABLE_NAME).child(milestone.getMilestoneID()).child("completed").setValue(milestone.isCompleted()); // TODO, send in single value or whole object?
+            mDbRoot.child(Milestone.TABLE_NAME).child(milestone.getMilestoneID()).child("completed").setValue(milestone.isCompleted()); // TODO, send in single value or whole object?
         };
     }
 
     public void update(ArrayList<Milestone> milestones)
     {
-        items.clear();
-        items.addAll(milestones);
+        mItems.clear();
+        mItems.addAll(milestones);
         notifyDataSetChanged();
         Log.d(TAG, "Updated list with " + milestones.size() + " item(s)");
     }

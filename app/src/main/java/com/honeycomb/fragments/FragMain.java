@@ -117,6 +117,10 @@ public class FragMain extends baseFragment
                             ((EditText)ad.findViewById(R.id.txtName)).getText().toString(),
                             ((EditText)ad.findViewById(R.id.txtDescription)).getText().toString(),
                             null);
+                    ArrayList<String> aList = new ArrayList<>();
+                    aList.add(currentUser.getUserID());
+                    aList.add(currentUser.getUserID());
+                    t.setMembers(aList);
 
                     t.setTaskID(Database.root.child(Task.TABLE_NAME).push().getKey());
                     Database.root.child(Task.TABLE_NAME)

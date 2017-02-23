@@ -1,5 +1,7 @@
 package com.honeycomb.helper.Database.objects;
 
+import java.util.ArrayList;
+
 /**
  * Created by Ash on 30/01/2017.
  */
@@ -13,6 +15,7 @@ public class Task
     private String mName;
     private String mDescription;
     private String mDeadline;
+    private ArrayList<String> mMembers;
 
     public Task() { } // Needed by Firebase
     public Task(String projectID, String taskID, String name, String description, String deadline)
@@ -22,6 +25,7 @@ public class Task
         mName = name;
         mDescription = description;
         mDeadline = deadline;
+        mMembers = new ArrayList<>();
     }
 
     public String getProjectID() { return mProjectID; }
@@ -38,4 +42,7 @@ public class Task
 
     public String getDescription() { return mDescription; }
     public void setDescription(String description) { this.mDescription = description; }
+
+    public ArrayList<String> getMembers() { return mMembers; }
+    public void setMembers(ArrayList<String> members) { mMembers = members; }
 }

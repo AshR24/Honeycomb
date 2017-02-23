@@ -10,8 +10,14 @@ import android.view.MenuInflater;
 
 import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.honeycomb.R;
 import com.honeycomb.helper.Database.Database;
+import com.honeycomb.helper.Database.objects.User;
 import com.honeycomb.helper.FragmentHelper;
 
 import java.util.ArrayList;
@@ -30,6 +36,10 @@ public abstract class baseFragment extends Fragment
     protected FloatingActionMenu fam;
     protected ArrayList<FloatingActionButton> fabs;
 
+    protected User currentUser;
+
+    //protected ArrayList TODO, users
+
     protected ActionBar getToolbar()
     {
         return ((AppCompatActivity)getActivity()).getSupportActionBar();
@@ -43,6 +53,7 @@ public abstract class baseFragment extends Fragment
         db = new Database();
         setHasOptionsMenu(true);
         initFam();
+        getUser();
     }
 
     @Override
@@ -65,6 +76,30 @@ public abstract class baseFragment extends Fragment
         {
             fam.addMenuButton(fab);
         }
+    }
+
+    private void getUser()
+    {
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+
+        Query queryRef = Database.root.child(User.TABLE_NAME)
+                .orderByKey()
+                .equalTo(auth.getCurrentUser().getUid());
+
+        queryRef.addListenerForSingleValueEvent(new ValueEventListener()
+        {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot)
+            {
+                for(DataSnapshot snap : dataSnapshot.getChildren())
+                {
+                    currentUser = snap.getValue(User.class);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) { }
+        });
     }
 
     @Override
