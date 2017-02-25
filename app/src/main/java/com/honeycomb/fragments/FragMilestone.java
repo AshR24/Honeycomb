@@ -126,7 +126,7 @@ public class FragMilestone extends baseEditFragment
         DatabaseReference dbRef = Database.root.child(Milestone.TABLE_NAME)
                 .child(currentMilestone.getMilestoneID());
 
-        db.addValueEventListener(TAG, dbRef, new ValueEventListener()
+        db.addValueEventListener(dbRef, new ValueEventListener()
         {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot)
@@ -168,7 +168,7 @@ public class FragMilestone extends baseEditFragment
                 .orderByChild("milestoneID")
                 .equalTo(currentMilestone.getMilestoneID());
 
-        db.addValueEventListener(TAG, queryRef, new ValueEventListener()
+        db.addValueEventListener(queryRef, new ValueEventListener()
         {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot)

@@ -13,7 +13,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -29,16 +28,14 @@ import com.honeycomb.R;
 import com.honeycomb.helper.Database.Database;
 import com.honeycomb.helper.Database.objects.Milestone;
 import com.honeycomb.helper.Database.objects.Task;
-import com.honeycomb.helper.Database.objects.User;
+import com.honeycomb.helper.MembersLoader;
 import com.honeycomb.helper.Time;
 import com.honeycomb.helper.adapters.MilestoneAdapter;
 import com.hootsuite.nachos.NachoTextView;
-import com.hootsuite.nachos.chip.ChipInfo;
 
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by Ash on 20/01/2017.
@@ -54,8 +51,9 @@ public class FragTask extends baseEditFragment
     private TextView mTxtDeadline;
     private LinearLayout mLlMilestone;
     private RecyclerView mRvMilestones;
+    private NachoTextView mTxtMembers;
 
-    private ArrayList<User> users;
+    private MembersLoader membersLoader;
 
     public static FragTask newInstance(@Nullable Task task)
     {
@@ -77,9 +75,9 @@ public class FragTask extends baseEditFragment
         super.onActivityCreated(savedInstanceState);
         getToolbar().setTitle("Task");
 
+        membersLoader = new MembersLoader(getContext(), db, mTxtMembers);
         loadTask();
         loadMilestones();
-        loadMembers();
 
         ArrayList<FloatingActionButton> fabs = new ArrayList<>();
         FloatingActionButton fabAddMilestone = new FloatingActionButton(getContext());
@@ -93,11 +91,6 @@ public class FragTask extends baseEditFragment
         fabAddDeadline.setOnClickListener(addDeadline);
         fabs.add(fabAddDeadline);
 
-        FloatingActionButton fabAddUser = new FloatingActionButton(getContext());
-        fabAddUser.setLabelText("Add User");
-        fabAddUser.setOnClickListener(addUser);
-        fabs.add(fabAddUser);
-
         setFam(fabs);
     }
 
@@ -109,6 +102,7 @@ public class FragTask extends baseEditFragment
         {
             sCurrentTask.setName(mTxtName.getText().toString());
             sCurrentTask.setDescription(mTxtDescription.getText().toString());
+            sCurrentTask.setMembers(membersLoader.getMembers());
             Database.root.child(Task.TABLE_NAME)
                     .child(sCurrentTask.getTaskID())
                     .setValue(sCurrentTask);
@@ -124,17 +118,21 @@ public class FragTask extends baseEditFragment
         mLlDeadline = (LinearLayout)getView().findViewById(R.id.llDeadline);
         mLlDeadline.setVisibility(View.GONE);
         mTxtDeadline = (TextView)getView().findViewById(R.id.txtDeadline);
+        mTxtDeadline.setOnClickListener(addDeadline);
 
         mLlMilestone = (LinearLayout)getView().findViewById(R.id.llMilestones);
         mLlMilestone.setVisibility(View.GONE);
         mRvMilestones = (RecyclerView)getView().findViewById(R.id.rvMilestones);
+
+        mTxtMembers = (NachoTextView)getView().findViewById(R.id.ntxtUsers);
+        mTxtMembers.setOnFocusChangeListener(focusChanged);
     }
 
     private void loadTask()
     {
         DatabaseReference dbRef = Database.root.child(Task.TABLE_NAME)
                 .child(sCurrentTask.getTaskID());
-        db.addValueEventListener(TAG, dbRef, new ValueEventListener()
+        db.addValueEventListener(dbRef, new ValueEventListener()
         {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot)
@@ -157,6 +155,11 @@ public class FragTask extends baseEditFragment
             @Override
             public void onCancelled(DatabaseError databaseError) { }
         });
+
+        DatabaseReference dbMembersRef = Database.root.child(Task.TABLE_NAME)
+                .child(sCurrentTask.getTaskID())
+                .child("members");
+        membersLoader.loadMembersOf(dbMembersRef);
     }
 
     private void loadMilestones()
@@ -178,7 +181,7 @@ public class FragTask extends baseEditFragment
                 .orderByChild("taskID")
                 .equalTo(sCurrentTask.getTaskID());
 
-        db.addValueEventListener(TAG, queryRef, new ValueEventListener()
+        db.addValueEventListener(queryRef, new ValueEventListener()
         {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot)
@@ -197,68 +200,6 @@ public class FragTask extends baseEditFragment
             @Override
             public void onCancelled(DatabaseError databaseError) { }
         });
-    }
-
-    private void loadMembers()
-    {
-        users = new ArrayList<>();
-
-        DatabaseReference dbRef = Database.root.child(Task.TABLE_NAME)
-                .child(sCurrentTask.getTaskID())
-                .child("members");
-
-        db.addValueEventListener(TAG, dbRef, new ValueEventListener()
-        {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot)
-            {
-                for(DataSnapshot snap : dataSnapshot.getChildren())
-                {
-                    Query queryRef = Database.root.child("User")
-                            .orderByKey()
-                            .equalTo(snap.getValue(String.class));
-
-                    queryRef.addListenerForSingleValueEvent(new ValueEventListener()
-                    {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot)
-                        {
-                            for(DataSnapshot snap : dataSnapshot.getChildren())
-                            {
-                                users.add(snap.getValue(User.class));
-                            }
-                            updateUsers();
-                        }
-
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) { }
-                    });
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) { }
-        });
-    }
-
-    private void updateUsers()
-    {
-        NachoTextView ntxtUsers = (NachoTextView)getView().findViewById(R.id.ntxtUsers);
-        ntxtUsers.enableEditChipOnTouch(false, true);
-
-        ArrayList<String> userNames = new ArrayList<>();
-        List<ChipInfo> chips = new ArrayList<>();
-        for(User u : users)
-        {
-            userNames.add(u.getName());
-            ChipInfo ci = new ChipInfo(u.getName(), u);
-            chips.add(ci);
-        }
-        ntxtUsers.setTextWithChips(chips);
-
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_dropdown_item_1line, userNames);
-
-        ntxtUsers.setAdapter(adapter);
     }
 
     private void switchToMilestone(Milestone milestone)
@@ -342,25 +283,5 @@ public class FragTask extends baseEditFragment
                 })
                 .setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
         builder.show();
-    };
-
-    private View.OnClickListener addUser = v ->
-    {
-        LayoutInflater inflater = getActivity().getLayoutInflater();
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext())
-                .setTitle("Add Members")
-                .setView(inflater.inflate(R.layout.dialog_add_user, null))
-                .setPositiveButton("Add", (dialog, which) -> {
-                    AlertDialog ad = (AlertDialog)dialog;
-                    Log.d(TAG, "Adding User To Task");
-                })
-                .setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
-
-        String[] suggestions = new String[]{"Tortilla Chips", "Melted Cheese", "Salsa", "Guacamole", "Mexico", "Jalapeno"};
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_dropdown_item_1line, suggestions);
-
-        Dialog d = builder.show();
-        NachoTextView ntxtUsers = (NachoTextView)d.findViewById(R.id.ntxtUsers);
-        ntxtUsers.setAdapter(adapter);
     };
 }

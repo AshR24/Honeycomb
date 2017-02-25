@@ -19,8 +19,8 @@ import org.joda.time.DateTime;
 
 import java.util.ArrayList;
 
-import rx.Observable;
-import rx.subjects.PublishSubject;
+import io.reactivex.Observable;
+import io.reactivex.subjects.PublishSubject;
 
 /**
  * Created by Ash on 26/01/2017.
@@ -36,7 +36,7 @@ public class MilestoneAdapter extends RecyclerView.Adapter<MilestoneAdapter.View
 
     public Observable<Milestone> getClickSubject()
     {
-        return mOnClickSubject.asObservable();
+        return mOnClickSubject;
     }
 
     protected class ViewHolder extends RecyclerView.ViewHolder

@@ -18,6 +18,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
 import com.honeycomb.R;
+import com.honeycomb.Subjects;
 import com.honeycomb.helper.Database.Database;
 import com.honeycomb.helper.Database.objects.Task;
 import com.honeycomb.helper.adapters.TaskAdapter;
@@ -48,7 +49,7 @@ public class FragMain extends baseFragment
         super.onActivityCreated(savedInstanceState);
         getToolbar().setTitle("Tasks");
 
-        loadTasks();
+        db.addSubscriber(Subjects.SUBJECT_CURRENT_USER.subscribe(user -> loadTasks()));
 
         ArrayList<FloatingActionButton> fabs = new ArrayList<>();
         FloatingActionButton fab = new FloatingActionButton(getContext());
@@ -74,8 +75,9 @@ public class FragMain extends baseFragment
         taskAdapter.getClickSubject()
                 .subscribe(this::switchToTask);
 
+
         DatabaseReference dbRef = Database.root.child(Task.TABLE_NAME);
-        db.addValueEventListener(TAG, dbRef, new ValueEventListener()
+        db.addValueEventListener(dbRef, new ValueEventListener()
         {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot)
@@ -84,16 +86,18 @@ public class FragMain extends baseFragment
                 for(DataSnapshot snap : dataSnapshot.getChildren())
                 {
                     Task task = snap.getValue(Task.class);
-                    tasks.add(task);
+                    ArrayList<String> users = task.getMembers();
+
+                    if(users.contains(currentUser.getUserID()))
+                    {
+                        tasks.add(task);
+                    }
                 }
                 taskAdapter.update(tasks);
             }
 
             @Override
-            public void onCancelled(DatabaseError databaseError)
-            {
-
-            }
+            public void onCancelled(DatabaseError databaseError) { }
         });
     }
 
@@ -118,7 +122,6 @@ public class FragMain extends baseFragment
                             ((EditText)ad.findViewById(R.id.txtDescription)).getText().toString(),
                             null);
                     ArrayList<String> aList = new ArrayList<>();
-                    aList.add(currentUser.getUserID());
                     aList.add(currentUser.getUserID());
                     t.setMembers(aList);
 

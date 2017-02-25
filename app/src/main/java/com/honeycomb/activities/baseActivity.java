@@ -11,6 +11,7 @@ import com.firebase.ui.auth.AuthUI;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.honeycomb.R;
+import com.honeycomb.helper.Database.Database;
 import com.honeycomb.helper.FragmentHelper;
 import com.mikepenz.materialdrawer.AccountHeader;
 import com.mikepenz.materialdrawer.AccountHeaderBuilder;
@@ -33,7 +34,8 @@ public abstract class baseActivity extends AppCompatActivity
     protected Drawer drawer;
     protected AccountHeader drawerHeader;
     protected FirebaseAuth auth;
-    protected FirebaseUser currentUser;
+    protected FirebaseUser currentFirebaseUser;
+    protected Database db;
 
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -41,7 +43,8 @@ public abstract class baseActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         fragmentHelper = new FragmentHelper(this);
         auth = FirebaseAuth.getInstance();
-        currentUser = auth.getCurrentUser();
+        currentFirebaseUser = auth.getCurrentUser();
+        db = new Database();
     }
 
     @Override
@@ -67,7 +70,7 @@ public abstract class baseActivity extends AppCompatActivity
                 .withSelectionListEnabledForSingleProfile(false)
                 .withTextColor(Color.BLACK)
                 .addProfiles(
-                        new ProfileDrawerItem().withTextColor(Color.BLACK).withName(currentUser.getDisplayName()).withEmail(currentUser.getEmail())
+                        new ProfileDrawerItem().withTextColor(Color.BLACK).withName(currentFirebaseUser.getDisplayName()).withEmail(currentFirebaseUser.getEmail())
                 )
                 .build();
 
@@ -93,6 +96,8 @@ public abstract class baseActivity extends AppCompatActivity
                 })
                 .build();
     }
+
+
 
     private void signOut()
     {

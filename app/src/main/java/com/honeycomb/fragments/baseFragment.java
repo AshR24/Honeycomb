@@ -5,17 +5,14 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 
 import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.Query;
-import com.google.firebase.database.ValueEventListener;
 import com.honeycomb.R;
+import com.honeycomb.Subjects;
 import com.honeycomb.helper.Database.Database;
 import com.honeycomb.helper.Database.objects.User;
 import com.honeycomb.helper.FragmentHelper;
@@ -36,9 +33,7 @@ public abstract class baseFragment extends Fragment
     protected FloatingActionMenu fam;
     protected ArrayList<FloatingActionButton> fabs;
 
-    protected User currentUser;
-
-    //protected ArrayList TODO, users
+    protected static User currentUser;
 
     protected ActionBar getToolbar()
     {
@@ -53,14 +48,20 @@ public abstract class baseFragment extends Fragment
         db = new Database();
         setHasOptionsMenu(true);
         initFam();
-        getUser();
+
+        db.addSubscriber(Subjects.SUBJECT_CURRENT_USER.subscribe(user ->
+        {
+            currentUser = user;
+            Log.d(TAG, "Updated current user to: " + user.getName());
+        }));
     }
 
     @Override
     public void onStop()
     {
         super.onStop();
-        db.clearEventListeners(this.getClass().getSimpleName());
+        db.clearEventListeners();
+        db.clearSubscribers();
     }
 
     private void initFam()
@@ -76,30 +77,6 @@ public abstract class baseFragment extends Fragment
         {
             fam.addMenuButton(fab);
         }
-    }
-
-    private void getUser()
-    {
-        FirebaseAuth auth = FirebaseAuth.getInstance();
-
-        Query queryRef = Database.root.child(User.TABLE_NAME)
-                .orderByKey()
-                .equalTo(auth.getCurrentUser().getUid());
-
-        queryRef.addListenerForSingleValueEvent(new ValueEventListener()
-        {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot)
-            {
-                for(DataSnapshot snap : dataSnapshot.getChildren())
-                {
-                    currentUser = snap.getValue(User.class);
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) { }
-        });
     }
 
     @Override

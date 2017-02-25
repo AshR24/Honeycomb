@@ -6,6 +6,7 @@ import android.support.annotation.Nullable;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
 
 import com.honeycomb.R;
@@ -56,10 +57,12 @@ public abstract class baseEditFragment extends baseFragment
     protected EditText initEditText(@IdRes int id)
     {
         final EditText result = (EditText)getView().findViewById(id);
-        result.setOnFocusChangeListener((view, b) -> setEditMode(b));
+        result.setOnFocusChangeListener(focusChanged);
 
         return result;
     }
+
+    protected View.OnFocusChangeListener focusChanged = (v, hasFocus) -> setEditMode(hasFocus);
 
     protected abstract void loadIO();
 }

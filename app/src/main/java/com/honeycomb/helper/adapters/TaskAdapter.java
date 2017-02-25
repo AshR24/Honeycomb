@@ -7,8 +7,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.honeycomb.R;
 import com.honeycomb.helper.Database.objects.Task;
 import com.honeycomb.helper.Time;
@@ -17,8 +15,8 @@ import org.joda.time.DateTime;
 
 import java.util.ArrayList;
 
-import rx.Observable;
-import rx.subjects.PublishSubject;
+import io.reactivex.Observable;
+import io.reactivex.subjects.PublishSubject;
 
 /**
  * Created by Ash on 09/02/2017.
@@ -30,11 +28,10 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.ViewHolder>
 
     private final ArrayList<Task> mItems;
     private final PublishSubject<Task> mOnClickSubject = PublishSubject.create();
-    private DatabaseReference mDbRoot = FirebaseDatabase.getInstance().getReference();
 
     public Observable<Task> getClickSubject()
     {
-        return mOnClickSubject.asObservable();
+        return mOnClickSubject;
     }
 
     protected class ViewHolder extends RecyclerView.ViewHolder
