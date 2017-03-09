@@ -14,4 +14,6 @@ public class Subjects
 {
     public static final BehaviorSubject<User> SUBJECT_CURRENT_USER = BehaviorSubject.create();
     public static final BehaviorSubject<ArrayList<User>> SUBJECT_ALL_USERS = BehaviorSubject.create();
+
+    public static final BehaviorSubject<ArrayList<User>> SUBJECT_CURRENT_MEMBERS = BehaviorSubject.create();
 }

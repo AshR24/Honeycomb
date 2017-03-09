@@ -52,7 +52,7 @@ public abstract class baseFragment extends Fragment
         db.addSubscriber(Subjects.SUBJECT_CURRENT_USER.subscribe(user ->
         {
             currentUser = user;
-            Log.d(TAG, "Updated current user to: " + user.getName());
+            Log.d(TAG, "Updated currentUsers user to: " + user.getName());
         }));
     }
 

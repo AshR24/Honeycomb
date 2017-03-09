@@ -77,15 +77,16 @@ public class Main extends baseActivity
                 .orderByKey()
                 .equalTo(auth.getCurrentUser().getUid());
 
-        queryRef.addListenerForSingleValueEvent(new ValueEventListener()
+        db.addValueEventListener(queryRef, new ValueEventListener()
         {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot)
             {
                 for(DataSnapshot snap : dataSnapshot.getChildren())
                 {
-                    Subjects.SUBJECT_CURRENT_USER.onNext(snap.getValue(User.class));
-                    Log.d(TAG, "Published a user to SUBJECT_CURRENT_USER: " + snap.getValue(User.class).getName());
+                    User user = snap.getValue(User.class);
+                    Subjects.SUBJECT_CURRENT_USER.onNext(user);
+                    Log.d(TAG, "Published a user to SUBJECT_CURRENT_USER: " + user.getName());
                 }
             }
 

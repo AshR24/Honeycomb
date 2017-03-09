@@ -43,4 +43,10 @@ public class Milestone
 
     public boolean isCompleted() { return mIsCompleted; }
     public void setCompleted(boolean isCompleted) { mIsCompleted = isCompleted; }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        return this.mMilestoneID.equals(((Milestone)obj).getMilestoneID());
+    }
 }

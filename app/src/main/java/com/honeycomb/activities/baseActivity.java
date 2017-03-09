@@ -97,8 +97,6 @@ public abstract class baseActivity extends AppCompatActivity
                 .build();
     }
 
-
-
     private void signOut()
     {
         AuthUI.getInstance()

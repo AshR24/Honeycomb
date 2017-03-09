@@ -16,6 +16,7 @@ public class Task
     private String mDescription;
     private String mDeadline;
     private ArrayList<String> mMembers;
+    private ArrayList<String> mMilestones;
 
     public Task() { } // Needed by Firebase
     public Task(String projectID, String taskID, String name, String description, String deadline)
@@ -45,4 +46,13 @@ public class Task
 
     public ArrayList<String> getMembers() { return mMembers; }
     public void setMembers(ArrayList<String> members) { mMembers = members; }
+
+    public ArrayList<String> getMilestones() { return mMilestones; }
+    public void setMilestones(ArrayList<String> milestones) { mMilestones = milestones; }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        return this.mTaskID.equals(((Task)obj).getTaskID());
+    }
 }

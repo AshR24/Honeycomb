@@ -15,15 +15,18 @@ import android.widget.EditText;
 import com.github.clans.fab.FloatingActionButton;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.honeycomb.R;
 import com.honeycomb.Subjects;
 import com.honeycomb.helper.Database.Database;
+import com.honeycomb.helper.Database.managers.MemberManager;
 import com.honeycomb.helper.Database.objects.Task;
+import com.honeycomb.helper.Database.objects.User;
 import com.honeycomb.helper.adapters.TaskAdapter;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by Ash on 20/01/2017.
@@ -31,6 +34,7 @@ import java.util.ArrayList;
 
 public class FragMain extends baseFragment
 {
+
     public static FragMain newInstance()
     {
         return new FragMain();
@@ -49,7 +53,7 @@ public class FragMain extends baseFragment
         super.onActivityCreated(savedInstanceState);
         getToolbar().setTitle("Tasks");
 
-        db.addSubscriber(Subjects.SUBJECT_CURRENT_USER.subscribe(user -> loadTasks()));
+        db.addSubscriber(Subjects.SUBJECT_CURRENT_USER.subscribe(user -> loadTasks(user)));
 
         ArrayList<FloatingActionButton> fabs = new ArrayList<>();
         FloatingActionButton fab = new FloatingActionButton(getContext());
@@ -59,8 +63,9 @@ public class FragMain extends baseFragment
         setFam(fabs);
     }
 
-    private void loadTasks()
+    private void loadTasks(User user)
     {
+        Log.d(TAG, "load tasks");
         final TaskAdapter taskAdapter = new TaskAdapter();
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
 
@@ -72,33 +77,71 @@ public class FragMain extends baseFragment
                 linearLayoutManager.getOrientation());
         rv.addItemDecoration(dividerItemDecoration);
 
-        taskAdapter.getClickSubject()
-                .subscribe(this::switchToTask);
+        taskAdapter.getClickSubject().subscribe(this::switchToTask);
 
+        HashMap<String, Task> tasks = new HashMap<>();
+        for(String str : user.getTasks())
+        {
+            Query queryRef = Database.root.child(Task.TABLE_NAME)
+                    .orderByKey()
+                    .equalTo(str);
+            db.addValueEventListener(queryRef, new ValueEventListener()
+            {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot)
+                {
+                    for(DataSnapshot snap : dataSnapshot.getChildren())
+                    {
+                        Task task = snap.getValue(Task.class);
+                        tasks.put(task.getTaskID(), task);
+                    }
 
-        DatabaseReference dbRef = Database.root.child(Task.TABLE_NAME);
+                    taskAdapter.update(new ArrayList<>(tasks.values()));
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) { }
+            });
+
+        }
+
+        /*DatabaseReference dbRef = Database.root.child(User.TABLE_NAME)
+                .child(currentUser.getUserID())
+                .child("tasks");
         db.addValueEventListener(dbRef, new ValueEventListener()
         {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot)
             {
                 ArrayList<Task> tasks = new ArrayList<>();
+
                 for(DataSnapshot snap : dataSnapshot.getChildren())
                 {
-                    Task task = snap.getValue(Task.class);
-                    ArrayList<String> users = task.getMembers();
+                    Database.root.child(Task.TABLE_NAME)
+                            .orderByChild("taskID")
+                            .equalTo(snap.getValue(String.class))
+                            .addListenerForSingleValueEvent(new ValueEventListener()
+                            {
+                                @Override
+                                public void onDataChange(DataSnapshot dataSnapshot)
+                                {
+                                    for(DataSnapshot snap : dataSnapshot.getChildren())
+                                    {
+                                        tasks.add(snap.getValue(Task.class));
+                                    }
 
-                    if(users.contains(currentUser.getUserID()))
-                    {
-                        tasks.add(task);
-                    }
+                                    taskAdapter.update(tasks);
+                                }
+
+                                @Override
+                                public void onCancelled(DatabaseError databaseError) { }
+                            });
                 }
-                taskAdapter.update(tasks);
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) { }
-        });
+        });*/
     }
 
     private void switchToTask(Task task)
@@ -129,6 +172,8 @@ public class FragMain extends baseFragment
                     Database.root.child(Task.TABLE_NAME)
                             .child(t.getTaskID())
                             .setValue(t);
+
+                    MemberManager.updateUserTasks(t, currentUser, true);
                 })
                 .setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
         builder.show();

@@ -19,4 +19,5 @@
         android:ems="10"
         android:hint="Description (optional)"
         android:inputType="textPersonName"/>
+
 </LinearLayout>

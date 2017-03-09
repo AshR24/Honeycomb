@@ -26,9 +26,11 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.honeycomb.R;
 import com.honeycomb.helper.Database.Database;
+import com.honeycomb.helper.Database.managers.ChipManager;
+import com.honeycomb.helper.Database.managers.MemberManager;
 import com.honeycomb.helper.Database.objects.Milestone;
 import com.honeycomb.helper.Database.objects.Task;
-import com.honeycomb.helper.MembersLoader;
+import com.honeycomb.helper.Database.managers.TaskManager;
 import com.honeycomb.helper.Time;
 import com.honeycomb.helper.adapters.MilestoneAdapter;
 import com.hootsuite.nachos.NachoTextView;
@@ -37,12 +39,15 @@ import org.joda.time.DateTime;
 
 import java.util.ArrayList;
 
+import io.reactivex.subjects.BehaviorSubject;
+
 /**
  * Created by Ash on 20/01/2017.
  */
 
 public class FragTask extends baseEditFragment
 {
+    private static BehaviorSubject<Task> sSubCurrentTask;
     private static Task sCurrentTask;
 
     private EditText mTxtName;
@@ -53,12 +58,14 @@ public class FragTask extends baseEditFragment
     private RecyclerView mRvMilestones;
     private NachoTextView mTxtMembers;
 
-    private MembersLoader membersLoader;
+    private TaskManager mTaskManager;
+    private ChipManager mChipManager;
 
     public static FragTask newInstance(@Nullable Task task)
     {
         FragTask newFragment = new FragTask();
         sCurrentTask = task;
+        sSubCurrentTask = BehaviorSubject.create();
         return newFragment;
     }
 
@@ -75,7 +82,13 @@ public class FragTask extends baseEditFragment
         super.onActivityCreated(savedInstanceState);
         getToolbar().setTitle("Task");
 
-        membersLoader = new MembersLoader(getContext(), db, mTxtMembers);
+        DatabaseReference dbRef = Database.root.child(Task.TABLE_NAME)
+                .child(sCurrentTask.getTaskID())
+                .child("members");
+        MemberManager memberManager = new MemberManager(db, dbRef);
+        mChipManager = new ChipManager(getContext(), db, mTxtMembers);
+        mTaskManager = new TaskManager(sCurrentTask, db, memberManager);
+
         loadTask();
         loadMilestones();
 
@@ -102,10 +115,17 @@ public class FragTask extends baseEditFragment
         {
             sCurrentTask.setName(mTxtName.getText().toString());
             sCurrentTask.setDescription(mTxtDescription.getText().toString());
-            sCurrentTask.setMembers(membersLoader.getMembers());
+
             Database.root.child(Task.TABLE_NAME)
                     .child(sCurrentTask.getTaskID())
-                    .setValue(sCurrentTask);
+                    .child("name")
+                    .setValue(sCurrentTask.getName());
+            Database.root.child(Task.TABLE_NAME)
+                    .child(sCurrentTask.getTaskID())
+                    .child("description")
+                    .setValue(sCurrentTask.getDescription());
+
+            mTaskManager.compareMembersToOld(mChipManager.getUsersFromChips());
             Log.d(TAG, "Saved Task");
         }
     }
@@ -155,11 +175,6 @@ public class FragTask extends baseEditFragment
             @Override
             public void onCancelled(DatabaseError databaseError) { }
         });
-
-        DatabaseReference dbMembersRef = Database.root.child(Task.TABLE_NAME)
-                .child(sCurrentTask.getTaskID())
-                .child("members");
-        membersLoader.loadMembersOf(dbMembersRef);
     }
 
     private void loadMilestones()
@@ -280,6 +295,8 @@ public class FragTask extends baseEditFragment
                     Database.root.child(Milestone.TABLE_NAME)
                             .child(m.getMilestoneID())
                             .setValue(m);
+
+                    TaskManager.addMilestoneToTasks(m, sCurrentTask, true);
                 })
                 .setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
         builder.show();

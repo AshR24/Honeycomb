@@ -11,6 +11,7 @@ public class Comment
     private String mMilestoneID;
     private String mCommentID;
     private String mUserID;
+    private String mUserName;
     private String mComment;
     private String mDatePosted;
 
@@ -33,9 +34,18 @@ public class Comment
     public String getUserID() { return mUserID; }
     public void setUserID(String userID) { mUserID = userID; }
 
+    public String getUserName() { return mUserName; }
+    public void setUserName(String userName) { mUserName = userName; }
+
     public String getComment() { return mComment; }
     public void setComment(String comment) { mComment = comment; }
 
     public String getDatePosted() { return mDatePosted; }
     public void setDatePosted(String datePosted) { mDatePosted = datePosted; }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        return this.mCommentID.equals(((Comment)obj).getCommentID());
+    }
 }
