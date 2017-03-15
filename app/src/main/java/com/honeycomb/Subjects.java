@@ -1,5 +1,6 @@
 package com.honeycomb;
 
+import com.honeycomb.helper.Database.objects.Task;
 import com.honeycomb.helper.Database.objects.User;
 
 import java.util.ArrayList;

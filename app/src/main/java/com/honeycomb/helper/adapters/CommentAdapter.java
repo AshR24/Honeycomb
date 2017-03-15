@@ -29,12 +29,14 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
     {
         public TextView comment;
         public TextView datePosted;
+        public TextView author;
 
         public ViewHolder(View itemView)
         {
             super(itemView);
             comment = (TextView)itemView.findViewById(R.id.txtComment);
             datePosted = (TextView)itemView.findViewById(R.id.txtDatePosted);
+            author = (TextView)itemView.findViewById(R.id.txtAuthor);
         }
 
         public void set(Comment comment)
@@ -43,6 +45,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
             {
                 this.comment.setText(comment.getComment());
                 datePosted.setText(Time.toShortWordyReadable(new DateTime(comment.getDatePosted())));
+                author.setText(comment.getUserName());
             }
         }
     }

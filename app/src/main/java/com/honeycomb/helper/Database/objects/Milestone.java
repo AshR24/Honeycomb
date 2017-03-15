@@ -1,5 +1,7 @@
 package com.honeycomb.helper.Database.objects;
 
+import java.util.ArrayList;
+
 /**
  * Created by Ash on 30/01/2017.
  */
@@ -14,6 +16,7 @@ public class Milestone
     private String mDescription;
     private String mDeadline;
     private boolean mIsCompleted;
+    private ArrayList<String> mMembers;
 
     public Milestone() { } // Needed by Firebase
     public Milestone(String taskID, String milestoneID, String name, String description, String deadline, Boolean isCompleted)
@@ -24,6 +27,7 @@ public class Milestone
         mDescription = description;
         mDeadline = deadline;
         mIsCompleted = isCompleted;
+        mMembers = new ArrayList<>();
     }
 
     public String getTaskID() { return mTaskID; }
@@ -43,6 +47,9 @@ public class Milestone
 
     public boolean isCompleted() { return mIsCompleted; }
     public void setCompleted(boolean isCompleted) { mIsCompleted = isCompleted; }
+
+    public ArrayList<String> getMembers() { return mMembers; }
+    public void setMembers(ArrayList<String> members) { mMembers = members; }
 
     @Override
     public boolean equals(Object obj)

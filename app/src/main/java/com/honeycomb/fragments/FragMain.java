@@ -21,6 +21,7 @@ import com.honeycomb.R;
 import com.honeycomb.Subjects;
 import com.honeycomb.helper.Database.Database;
 import com.honeycomb.helper.Database.managers.MemberManager;
+import com.honeycomb.helper.Database.objects.Milestone;
 import com.honeycomb.helper.Database.objects.Task;
 import com.honeycomb.helper.Database.objects.User;
 import com.honeycomb.helper.adapters.TaskAdapter;
@@ -53,7 +54,7 @@ public class FragMain extends baseFragment
         super.onActivityCreated(savedInstanceState);
         getToolbar().setTitle("Tasks");
 
-        db.addSubscriber(Subjects.SUBJECT_CURRENT_USER.subscribe(user -> loadTasks(user)));
+        db.addSubscriber(Subjects.SUBJECT_CURRENT_USER.subscribe(this::loadTasks));
 
         ArrayList<FloatingActionButton> fabs = new ArrayList<>();
         FloatingActionButton fab = new FloatingActionButton(getContext());
@@ -80,68 +81,34 @@ public class FragMain extends baseFragment
         taskAdapter.getClickSubject().subscribe(this::switchToTask);
 
         HashMap<String, Task> tasks = new HashMap<>();
-        for(String str : user.getTasks())
+        if(user.getTasks() != null)
         {
-            Query queryRef = Database.root.child(Task.TABLE_NAME)
-                    .orderByKey()
-                    .equalTo(str);
-            db.addValueEventListener(queryRef, new ValueEventListener()
+            for(String str : user.getTasks())
             {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot)
+                Query queryRef = Database.root.child(Task.TABLE_NAME)
+                        .orderByKey()
+                        .equalTo(str);
+                db.addValueEventListener(queryRef, new ValueEventListener()
                 {
-                    for(DataSnapshot snap : dataSnapshot.getChildren())
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot)
                     {
-                        Task task = snap.getValue(Task.class);
-                        tasks.put(task.getTaskID(), task);
+                        for (DataSnapshot snap : dataSnapshot.getChildren())
+                        {
+                            Task task = snap.getValue(Task.class);
+                            tasks.put(task.getTaskID(), task);
+                        }
+
+                        taskAdapter.update(new ArrayList<>(tasks.values()));
                     }
 
-                    taskAdapter.update(new ArrayList<>(tasks.values()));
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) { }
-            });
-
-        }
-
-        /*DatabaseReference dbRef = Database.root.child(User.TABLE_NAME)
-                .child(currentUser.getUserID())
-                .child("tasks");
-        db.addValueEventListener(dbRef, new ValueEventListener()
-        {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot)
-            {
-                ArrayList<Task> tasks = new ArrayList<>();
-
-                for(DataSnapshot snap : dataSnapshot.getChildren())
-                {
-                    Database.root.child(Task.TABLE_NAME)
-                            .orderByChild("taskID")
-                            .equalTo(snap.getValue(String.class))
-                            .addListenerForSingleValueEvent(new ValueEventListener()
-                            {
-                                @Override
-                                public void onDataChange(DataSnapshot dataSnapshot)
-                                {
-                                    for(DataSnapshot snap : dataSnapshot.getChildren())
-                                    {
-                                        tasks.add(snap.getValue(Task.class));
-                                    }
-
-                                    taskAdapter.update(tasks);
-                                }
-
-                                @Override
-                                public void onCancelled(DatabaseError databaseError) { }
-                            });
-                }
+                    @Override
+                    public void onCancelled(DatabaseError databaseError)
+                    {
+                    }
+                });
             }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) { }
-        });*/
+        }
     }
 
     private void switchToTask(Task task)

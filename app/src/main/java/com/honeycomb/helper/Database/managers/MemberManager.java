@@ -61,6 +61,8 @@ public class MemberManager
                         public void onCancelled(DatabaseError databaseError) { }
                     });
                 }
+
+                if(members.size() == 0) { Subjects.SUBJECT_CURRENT_MEMBERS.onNext(members); }
             }
 
             @Override

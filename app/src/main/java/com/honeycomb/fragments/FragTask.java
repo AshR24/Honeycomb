@@ -25,6 +25,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.honeycomb.R;
+import com.honeycomb.Subjects;
 import com.honeycomb.helper.Database.Database;
 import com.honeycomb.helper.Database.managers.ChipManager;
 import com.honeycomb.helper.Database.managers.MemberManager;
@@ -38,6 +39,7 @@ import com.hootsuite.nachos.NachoTextView;
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import io.reactivex.subjects.BehaviorSubject;
 
@@ -90,7 +92,7 @@ public class FragTask extends baseEditFragment
         mTaskManager = new TaskManager(sCurrentTask, db, memberManager);
 
         loadTask();
-        loadMilestones();
+        db.addSubscriber(sSubCurrentTask.subscribe(this::loadMilestones));
 
         ArrayList<FloatingActionButton> fabs = new ArrayList<>();
         FloatingActionButton fabAddMilestone = new FloatingActionButton(getContext());
@@ -158,6 +160,7 @@ public class FragTask extends baseEditFragment
             public void onDataChange(DataSnapshot dataSnapshot)
             {
                 sCurrentTask = dataSnapshot.getValue(Task.class);
+                sSubCurrentTask.onNext(sCurrentTask);
                 mTxtName.setText(sCurrentTask.getName());
                 mTxtDescription.setText(sCurrentTask.getDescription());
 
@@ -177,7 +180,7 @@ public class FragTask extends baseEditFragment
         });
     }
 
-    private void loadMilestones()
+    private void loadMilestones(Task task)
     {
         final MilestoneAdapter milestoneAdapter = new MilestoneAdapter();
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
@@ -192,29 +195,35 @@ public class FragTask extends baseEditFragment
         milestoneAdapter.getClickSubject()
                 .subscribe(this::switchToMilestone);
 
-        Query queryRef = Database.root.child(Milestone.TABLE_NAME)
-                .orderByChild("taskID")
-                .equalTo(sCurrentTask.getTaskID());
-
-        db.addValueEventListener(queryRef, new ValueEventListener()
+        HashMap<String, Milestone> milestones = new HashMap<>();
+        if(task.getMilestones() != null)
         {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot)
+            for(String str : task.getMilestones())
             {
-                ArrayList<Milestone> milestones = new ArrayList<>();
-                for(DataSnapshot snap : dataSnapshot.getChildren())
+                Query queryRef = Database.root.child(Milestone.TABLE_NAME)
+                        .orderByKey()
+                        .equalTo(str);
+                db.addValueEventListener(queryRef, new ValueEventListener()
                 {
-                    Milestone milestone = snap.getValue(Milestone.class);
-                    milestones.add(milestone);
-                }
-                milestoneAdapter.update(milestones);
-                if(milestones.size() == 0) { mLlMilestone.setVisibility(View.GONE); }
-                else { mLlMilestone.setVisibility(View.VISIBLE); }
-            }
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot)
+                    {
+                        for(DataSnapshot snap : dataSnapshot.getChildren())
+                        {
+                            Milestone milestone = snap.getValue(Milestone.class);
+                            milestones.put(milestone.getMilestoneID(), milestone);
+                        }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) { }
-        });
+                        milestoneAdapter.update(new ArrayList<>(milestones.values()));
+                        if(milestones.size() == 0) { mLlMilestone.setVisibility(View.GONE); }
+                        else { mLlMilestone.setVisibility(View.VISIBLE); }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) { }
+                });
+            }
+        }
     }
 
     private void switchToMilestone(Milestone milestone)

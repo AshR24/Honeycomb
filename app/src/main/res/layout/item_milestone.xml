@@ -33,6 +33,7 @@
         android:layout_marginRight="0dp"
         android:drawableStart="@drawable/ic_schedule_black_24dp"
         android:text="TextView"
+        android:textSize="12sp"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/txtName"
         tools:text="Deadline"/>

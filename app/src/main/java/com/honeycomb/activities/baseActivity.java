@@ -13,6 +13,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.honeycomb.R;
 import com.honeycomb.helper.Database.Database;
 import com.honeycomb.helper.FragmentHelper;
+import com.honeycomb.services.NotificationService;
 import com.mikepenz.materialdrawer.AccountHeader;
 import com.mikepenz.materialdrawer.AccountHeaderBuilder;
 import com.mikepenz.materialdrawer.Drawer;
@@ -45,6 +46,8 @@ public abstract class baseActivity extends AppCompatActivity
         auth = FirebaseAuth.getInstance();
         currentFirebaseUser = auth.getCurrentUser();
         db = new Database();
+
+        launchService();
     }
 
     @Override
@@ -95,6 +98,12 @@ public abstract class baseActivity extends AppCompatActivity
                     return true;
                 })
                 .build();
+    }
+
+    private void launchService()
+    {
+        Intent intent = new Intent(this, NotificationService.class);
+        startService(intent);
     }
 
     private void signOut()

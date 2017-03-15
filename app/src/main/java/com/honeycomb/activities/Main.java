@@ -37,9 +37,9 @@ public class Main extends baseActivity
     }
 
     @Override
-    protected void onStop()
+    protected void onDestroy()
     {
-        super.onStop();
+        super.onDestroy();
         db.clearEventListeners();
     }
 

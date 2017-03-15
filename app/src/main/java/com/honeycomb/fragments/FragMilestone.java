@@ -1,5 +1,8 @@
 package com.honeycomb.fragments;
 
+import android.app.DatePickerDialog;
+import android.app.Dialog;
+import android.app.TimePickerDialog;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationManagerCompat;
@@ -12,8 +15,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.RadioButton;
 import android.widget.TextView;
 
 import com.github.clans.fab.FloatingActionButton;
@@ -23,15 +28,25 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.honeycomb.R;
+import com.honeycomb.Subjects;
 import com.honeycomb.helper.Database.Database;
+import com.honeycomb.helper.Database.managers.MemberManager;
 import com.honeycomb.helper.Database.objects.Comment;
 import com.honeycomb.helper.Database.objects.Milestone;
+import com.honeycomb.helper.Database.objects.Task;
+import com.honeycomb.helper.Database.objects.User;
 import com.honeycomb.helper.Time;
 import com.honeycomb.helper.adapters.CommentAdapter;
+import com.hootsuite.nachos.NachoTextView;
+import com.hootsuite.nachos.chip.ChipInfo;
 
 import org.joda.time.DateTime;
 
+import java.lang.reflect.Array;
+import java.lang.reflect.Member;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 
 public class FragMilestone extends baseEditFragment
 {
@@ -43,6 +58,11 @@ public class FragMilestone extends baseEditFragment
     private TextView txtDeadline;
     private LinearLayout llComments;
     private RecyclerView rvComments;
+    private NachoTextView mNtxtMembers;
+    private RadioButton mRbutWorkingOn;
+    private RadioButton mRbutNotWorkingOn;
+
+    private MemberManager mMemberManager;
 
     public static FragMilestone newInstance(@Nullable Milestone milestone)
     {
@@ -64,25 +84,48 @@ public class FragMilestone extends baseEditFragment
         super.onActivityCreated(savedInstanceState);
         getToolbar().setTitle("Milestone");
 
+        mNtxtMembers.setEnabled(false);
+
+        DatabaseReference dbRef = Database.root.child(Milestone.TABLE_NAME)
+                .child(currentMilestone.getMilestoneID())
+                .child("members");
+
+        mMemberManager = new MemberManager(db, dbRef);
+
+        db.addSubscriber(Subjects.SUBJECT_CURRENT_MEMBERS.subscribe(users ->
+        {
+            List<ChipInfo> chips = new ArrayList<>();
+            for(User u : users)
+            {
+                ChipInfo ci = new ChipInfo(u.getName(), u);
+                chips.add(ci);
+            }
+            mNtxtMembers.setTextWithChips(chips);
+            Log.d(TAG, users.size() + " users loaded into members");
+        }));
+
+        if(currentMilestone.getMembers() != null)
+        {
+            if(currentMilestone.getMembers().contains(currentUser.getUserID()))
+            {
+                mRbutWorkingOn.setChecked(true);
+            }
+            else
+            {
+                mRbutNotWorkingOn.setChecked(true);
+            }
+        }
+
         loadMilestone();
         loadComments();
 
-        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getContext());
-        mBuilder.setSmallIcon(R.drawable.background_splash);
-        mBuilder.setContentTitle("Notification Alert, Click Me!");
-        mBuilder.setContentText("Hi, This is Android Notification Detail!");
-
-        NotificationManagerCompat manager = NotificationManagerCompat.from(getContext());
-        manager.notify(1, mBuilder.build());
-
         ArrayList<FloatingActionButton> fabs = new ArrayList<>();
-        if(currentMilestone.getDeadline() == null)
-        {
-            FloatingActionButton fab = new FloatingActionButton(getContext());
-            fab.setLabelText("Add Deadline");
-            fab.setOnClickListener(addDeadline);
-            fabs.add(fab);
-        }
+
+        FloatingActionButton fabAddDeadline = new FloatingActionButton(getContext());
+        if(currentMilestone.getDeadline() == null) { fabAddDeadline.setLabelText("Add Deadline"); }
+        else { fabAddDeadline.setLabelText("Change Deadline"); }
+        fabAddDeadline.setOnClickListener(addDeadline);
+        fabs.add(fabAddDeadline);
 
         FloatingActionButton fab = new FloatingActionButton(getContext());
         fab.setLabelText("Add Comment");
@@ -115,10 +158,42 @@ public class FragMilestone extends baseEditFragment
         llDeadline = (LinearLayout)getView().findViewById(R.id.llDeadline);
         llDeadline.setVisibility(View.GONE);
         txtDeadline = (TextView)getView().findViewById(R.id.txtDeadline);
+        txtDeadline.setOnClickListener(addDeadline);
 
         llComments = (LinearLayout)getView().findViewById(R.id.llComments);
         llComments.setVisibility(View.GONE);
         rvComments = (RecyclerView)getView().findViewById(R.id.rvComments);
+
+        mNtxtMembers = (NachoTextView)getView().findViewById(R.id.ntxtUsers);
+        mRbutWorkingOn = (RadioButton)getView().findViewById(R.id.rbutWorkingOn);
+        mRbutNotWorkingOn = (RadioButton)getView().findViewById(R.id.rButNotWorkingOn);
+
+        mRbutWorkingOn.setOnClickListener(v -> updateWorkingOn());
+        mRbutNotWorkingOn.setOnClickListener(v -> updateWorkingOn());
+    }
+
+    private void updateWorkingOn()
+    {
+        ArrayList<String> currentMembers = currentMilestone.getMembers() != null ? currentMilestone.getMembers() : new ArrayList<>();
+
+        if(mRbutWorkingOn.isChecked())
+        {
+            if(!currentMembers.contains(currentUser.getUserID()))
+            {
+                currentMembers.add(currentUser.getUserID());
+                currentMilestone.setMembers(currentMembers);
+                setEditMode(false);
+            }
+        }
+        else
+        {
+            if(currentMembers.contains(currentUser.getUserID()))
+            {
+                currentMembers.remove(currentUser.getUserID());
+                currentMilestone.setMembers(currentMembers);
+                setEditMode(false);
+            }
+        }
     }
 
     private void loadMilestone()
@@ -149,6 +224,58 @@ public class FragMilestone extends baseEditFragment
             @Override
             public void onCancelled(DatabaseError databaseError) { }
         });
+    }
+
+    private View.OnClickListener addDeadline = v ->
+    {
+        final DateTime[] dateTime = {currentMilestone.getDeadline() == null ? new DateTime() : new DateTime(currentMilestone.getDeadline())};
+
+        LayoutInflater inflater = getActivity().getLayoutInflater();
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext())
+                .setTitle("Add Deadline")
+                .setView(inflater.inflate(R.layout.dialog_add_deadline, null))
+                .setNegativeButton("Close", (dialog, which) -> dialog.cancel());
+        Dialog d = builder.show();
+
+        Button butDate = (Button)d.findViewById(R.id.butDate);
+        butDate.setText("Change Date");
+        Button butTime = (Button)d.findViewById(R.id.butTime);
+        butTime.setText("Change Time");
+
+        butDate.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                new DatePickerDialog(getContext(), (view, year, monthOfYear, dayOfMonth) ->
+                {
+                    dateTime[0] = changeDeadline(year, monthOfYear + 1, dayOfMonth, dateTime[0].getHourOfDay(), dateTime[0].getMinuteOfHour());
+                }, dateTime[0].getYear(), dateTime[0].getMonthOfYear() - 1, dateTime[0].getDayOfMonth()).show();
+            }
+        });
+
+        butTime.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                new TimePickerDialog(getContext(), (view, hourOfDay, minute) ->
+                {
+                    dateTime[0] = changeDeadline(dateTime[0].getYear(), dateTime[0].getMonthOfYear(), dateTime[0].getDayOfMonth(), hourOfDay, minute);
+                }, dateTime[0].getHourOfDay(), dateTime[0].getMinuteOfHour(), true).show();
+            }
+        });
+    };
+
+    private DateTime changeDeadline(int year, int month, int day, int hour, int minute)
+    {
+        DateTime newDT = new DateTime(year, month, day, hour, minute);
+        currentMilestone.setDeadline(newDT.toString());
+        Database.root.child(Milestone.TABLE_NAME)
+                .child(currentMilestone.getMilestoneID())
+                .child("deadline")
+                .setValue(currentMilestone.getDeadline());
+        return newDT;
     }
 
     private void loadComments()
@@ -189,14 +316,6 @@ public class FragMilestone extends baseEditFragment
         });
     }
 
-    private View.OnClickListener addDeadline = v ->
-    {
-        Log.d(TAG, "Adding Milestone");
-        currentMilestone.setDeadline(new DateTime().toString());
-
-        Database.root.child(Milestone.TABLE_NAME).child(currentMilestone.getMilestoneID()).child("deadline").setValue(currentMilestone.getDeadline());
-    };
-
     private View.OnClickListener addComment = v ->
     {
         LayoutInflater inflater = getActivity().getLayoutInflater();
@@ -211,6 +330,7 @@ public class FragMilestone extends baseEditFragment
                     comment.setCommentID(Database.root.child(Comment.TABLE_NAME).push().getKey());
                     comment.setComment(((EditText)ad.findViewById(R.id.txtComment)).getText().toString());
                     comment.setDatePosted(new DateTime().toString());
+                    comment.setUserName(currentUser.getName());
                     Database.root.child(Comment.TABLE_NAME).child(comment.getCommentID()).setValue(comment);
                 })
                 .setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
