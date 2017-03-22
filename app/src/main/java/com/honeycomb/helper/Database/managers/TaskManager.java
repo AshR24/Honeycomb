@@ -32,6 +32,10 @@ public class TaskManager
         }));
     }
 
+    /**
+     * Finds differences between lists - updates accordingly
+     * @param updated
+     */
     public void compareMembersToOld(ArrayList<User> updated)
     {
         ArrayList<User> newUsers = new ArrayList<>(mUsersInDB);
@@ -55,6 +59,12 @@ public class TaskManager
         mMemberManager.updateMembers(new ArrayList<>(updated));
     }
 
+    /**
+     * Adds the redundant data for 2-way referencing
+     * @param milestone
+     * @param task
+     * @param isAdd
+     */
     public static void addMilestoneToTasks(Milestone milestone, Task task, boolean isAdd)
     {
         ArrayList<String> milestones = task.getMilestones() != null ? task.getMilestones() : new ArrayList<>();

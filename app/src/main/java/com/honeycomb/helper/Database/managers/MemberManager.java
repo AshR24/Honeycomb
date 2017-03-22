@@ -30,6 +30,9 @@ public class MemberManager
         getMembersOf();
     }
 
+    /**
+     * Takes a userID and gets corresponding user account from database
+     */
     private void getMembersOf()
     {
         mDb.addValueEventListener(mDbMembersRef, new ValueEventListener()
@@ -70,6 +73,10 @@ public class MemberManager
         });
     }
 
+    /**
+     * Gets userIDs from users and stores them in list
+     * @param users
+     */
     public void updateMembers(ArrayList<User> users)
     {
         ArrayList<String> userIDs = new ArrayList<>();
@@ -81,6 +88,12 @@ public class MemberManager
         mDbMembersRef.setValue(userIDs);
     }
 
+    /**
+     * Adds the redundant data for 2-way referencing
+     * @param task
+     * @param user
+     * @param isAdd
+     */
     public static void updateUserTasks(Task task, User user, boolean isAdd)
     {
         ArrayList<String> tasks = user.getTasks() != null ? user.getTasks() : new ArrayList<>();

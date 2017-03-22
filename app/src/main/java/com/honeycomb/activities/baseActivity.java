@@ -58,12 +58,18 @@ public abstract class baseActivity extends AppCompatActivity
         initDrawer();
     }
 
+    /**
+     * Creates the Toolbar
+     */
     private void initToolbar()
     {
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
     }
 
+    /**
+     * Creates the Drawer - with user account
+     */
     private void initDrawer()
     {
         PrimaryDrawerItem itemSignOut = new PrimaryDrawerItem().withIdentifier(1).withName("Sign Out");
@@ -100,12 +106,18 @@ public abstract class baseActivity extends AppCompatActivity
                 .build();
     }
 
+    /**
+     * Launches the notification service
+     */
     private void launchService()
     {
         Intent intent = new Intent(this, NotificationService.class);
         startService(intent);
     }
 
+    /**
+     * Signs the current user out
+     */
     private void signOut()
     {
         AuthUI.getInstance()

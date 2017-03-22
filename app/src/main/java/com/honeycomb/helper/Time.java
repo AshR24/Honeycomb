@@ -13,6 +13,11 @@ import org.joda.time.format.PeriodFormatterBuilder;
 
 public class Time
 {
+    /**
+     * Gets the time until a given deadline
+     * @param deadline
+     * @return
+     */
     public static String untilDeadline(DateTime deadline)
     {
         Period p = new Period(new DateTime(), deadline);
@@ -40,6 +45,11 @@ public class Time
         return pFormatter.print(p.normalizedStandard());
     }
 
+    /**
+     * Human-readable date
+     * @param dateTime
+     * @return
+     */
     public static String toWordyReadable(DateTime dateTime)
     {
         DateTimeFormatter dtFormatter = new DateTimeFormatterBuilder()
@@ -59,6 +69,11 @@ public class Time
         return dtFormatter.print(dateTime);
     }
 
+    /**
+     * Shorter human-readable date
+     * @param dateTime
+     * @return
+     */
     public static String toShortWordyReadable(DateTime dateTime)
     {
         DateTimeFormatter dtFormatter = new DateTimeFormatterBuilder()

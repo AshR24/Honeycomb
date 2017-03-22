@@ -55,6 +55,11 @@ public class NotificationService extends IntentService
         compareTasksToOld(user);
     }
 
+    /**
+     * Gets differences between current tasks, and new tasks from database - sends notifications
+     * when a new task is found (doesn't exist in old)
+     * @param user
+     */
     private void compareTasksToOld(User user)
     {
         ArrayList<String> currentTasks = currentUser.getTasks() != null ? currentUser.getTasks() : new ArrayList<>();
@@ -69,6 +74,9 @@ public class NotificationService extends IntentService
         currentUser = user;
     }
 
+    /**
+     * Sends a notification to the host device
+     */
     private void sendNotification()
     {
         NotificationManager notificationManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);

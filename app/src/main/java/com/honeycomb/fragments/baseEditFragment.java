@@ -54,6 +54,11 @@ public abstract class baseEditFragment extends baseFragment
         actionConfirm.setVisible(isEditMode);
     }
 
+    /**
+     * Adds a focus listener to EditText - used to push updates to database
+     * @param id
+     * @return
+     */
     protected EditText initEditText(@IdRes int id)
     {
         final EditText result = (EditText)getView().findViewById(id);

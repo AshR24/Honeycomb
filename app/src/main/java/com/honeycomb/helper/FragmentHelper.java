@@ -19,6 +19,11 @@ public class FragmentHelper
         this.activity = activity;
     }
 
+    /**
+     * Replaces current fragment
+     * @param containerViewId
+     * @param fragment
+     */
     public void switchToFragment(@IdRes int containerViewId, Fragment fragment)
     {
         FragmentTransaction ft = activity.getSupportFragmentManager().beginTransaction();
@@ -26,6 +31,12 @@ public class FragmentHelper
         ft.commit();
     }
 
+    /**
+     * Replaces current fragment - uses backstack
+     * @param containerViewId
+     * @param fragment
+     * @param backStackName
+     */
     public void switchToFragment(@IdRes int containerViewId, Fragment fragment, @Nullable String backStackName)
     {
         FragmentTransaction ft = activity.getSupportFragmentManager().beginTransaction();

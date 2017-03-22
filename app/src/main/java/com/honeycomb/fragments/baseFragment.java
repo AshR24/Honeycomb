@@ -64,12 +64,19 @@ public abstract class baseFragment extends Fragment
         db.clearSubscribers();
     }
 
+    /**
+     * Creates the Floating Action Menu
+     */
     private void initFam()
     {
         fam = (FloatingActionMenu)getActivity().findViewById(R.id.fab_Menu);
         fabs = new ArrayList<>();
     }
 
+    /**
+     * Sets the Floating Action Menu with new buttons
+     * @param fabs
+     */
     public void setFam(ArrayList<FloatingActionButton> fabs)
     {
         fam.removeAllMenuButtons();

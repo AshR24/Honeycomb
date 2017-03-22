@@ -56,6 +56,10 @@ public class ChipManager
         }));
     }
 
+    /**
+     * Gets all users from chips in the members text box
+     * @return
+     */
     public ArrayList<User> getUsersFromChips()
     {
         HashSet<User> result = new HashSet<>();

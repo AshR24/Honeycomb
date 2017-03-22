@@ -64,6 +64,10 @@ public class FragMain extends baseFragment
         setFam(fabs);
     }
 
+    /**
+     * Gets a list of tasks for the current user
+     * @param user
+     */
     private void loadTasks(User user)
     {
         Log.d(TAG, "load tasks");
@@ -111,11 +115,18 @@ public class FragMain extends baseFragment
         }
     }
 
+    /**
+     * Loads a given task fragment
+     * @param task
+     */
     private void switchToTask(Task task)
     {
         fragmentHelper.switchToFragment(R.id.fragment_container, FragTask.newInstance(task), null);
     }
 
+    /**
+     * Creates and pushes a new task to the database
+     */
     private View.OnClickListener addTask = v ->
     {
         LayoutInflater inflater = getActivity().getLayoutInflater();

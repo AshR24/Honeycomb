@@ -132,6 +132,9 @@ public class FragTask extends baseEditFragment
         }
     }
 
+    /**
+     * Loads input from the view
+     */
     protected void loadIO()
     {
         mTxtName = initEditText(R.id.txtName);
@@ -150,6 +153,9 @@ public class FragTask extends baseEditFragment
         mTxtMembers.setOnFocusChangeListener(focusChanged);
     }
 
+    /**
+     * Loads the current task being viewed
+     */
     private void loadTask()
     {
         DatabaseReference dbRef = Database.root.child(Task.TABLE_NAME)
@@ -180,6 +186,10 @@ public class FragTask extends baseEditFragment
         });
     }
 
+    /**
+     * Loads all related comments for the current milestone
+     * @param task
+     */
     private void loadMilestones(Task task)
     {
         final MilestoneAdapter milestoneAdapter = new MilestoneAdapter();
@@ -226,11 +236,18 @@ public class FragTask extends baseEditFragment
         }
     }
 
+    /**
+     * Loads a given milestone fragment
+     * @param milestone
+     */
     private void switchToMilestone(Milestone milestone)
     {
         fragmentHelper.switchToFragment(R.id.fragment_container, FragMilestone.newInstance(milestone), null);
     }
 
+    /**
+     * Adds a deadline to the milestone using built-in android pickers
+     */
     private View.OnClickListener addDeadline = v ->
     {
         final DateTime[] dateTime = {sCurrentTask.getDeadline() == null ? new DateTime() : new DateTime(sCurrentTask.getDeadline())};
@@ -272,6 +289,15 @@ public class FragTask extends baseEditFragment
         });
     };
 
+    /**
+     * Modifies a deadline - pushing updates to the database
+     * @param year
+     * @param month
+     * @param day
+     * @param hour
+     * @param minute
+     * @return
+     */
     private DateTime changeDeadline(int year, int month, int day, int hour, int minute)
     {
         DateTime newDT = new DateTime(year, month, day, hour, minute);
@@ -283,6 +309,9 @@ public class FragTask extends baseEditFragment
         return newDT;
     }
 
+    /**
+     * Creates a new milestone for this task
+     */
     private View.OnClickListener addMilestone = v ->
     {
         LayoutInflater inflater = getActivity().getLayoutInflater();

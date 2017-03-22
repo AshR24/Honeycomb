@@ -31,6 +31,12 @@ public class Database
         disposables = new ArrayList<>();
     }
 
+    /**
+     * Adds a value listener to the database - for use with garbage collection
+     * @param dbRef
+     * @param vel
+     * @param <T>
+     */
     public <T extends Query> void addValueEventListener(T dbRef, ValueEventListener vel)
     {
         dbRef.addValueEventListener(vel);
@@ -38,6 +44,9 @@ public class Database
         Log.d(TAG, " Added VEL, new size: " + valueEventListeners.size());
     }
 
+    /**
+     * Removes all the value listeners from the database
+     */
     public void clearEventListeners()
     {
         Log.d(TAG, "Clearing event listeners (clearing " + valueEventListeners.size() + ")");
@@ -49,12 +58,19 @@ public class Database
         valueEventListeners.clear();
     }
 
+    /**
+     * Adds a subscriber to a given subject - for use with garbage collection
+     * @param disposable
+     */
     public void addSubscriber(Disposable disposable)
     {
         disposables.add(disposable);
         Log.d(TAG, " Added subscriber, new size: " + disposables.size());
     }
 
+    /**
+     * Removes all subscribers from a given subject
+     */
     public void clearSubscribers()
     {
         Log.d(TAG, "Disposing subscribers (clearing " + disposables.size() + ")");

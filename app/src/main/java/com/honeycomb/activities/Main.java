@@ -43,6 +43,9 @@ public class Main extends baseActivity
         db.clearEventListeners();
     }
 
+    /**
+     * Sends the currently signed in user to the database if their account doesn't exist there
+     */
     private void validateUser()
     {
         Query queryRef = Database.root.child(User.TABLE_NAME)
@@ -69,6 +72,9 @@ public class Main extends baseActivity
         });
     }
 
+    /**
+     * Takes an ID and gets the user from the database, pushes to subject
+     */
     private void getUser()
     {
         FirebaseAuth auth = FirebaseAuth.getInstance();
@@ -95,6 +101,9 @@ public class Main extends baseActivity
         });
     }
 
+    /**
+     * Returns all user accounts from database
+     */
     private void getAllUsers()
     {
         DatabaseReference dbRefAllUsers = Database.root.child(User.TABLE_NAME);
@@ -120,6 +129,11 @@ public class Main extends baseActivity
         });
     }
 
+    /**
+     * Allows an EditText to be de-focused
+     * @param event
+     * @return
+     */
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_DOWN) {

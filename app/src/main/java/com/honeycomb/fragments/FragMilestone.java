@@ -150,6 +150,9 @@ public class FragMilestone extends baseEditFragment
         }
     }
 
+    /**
+     * Loads input from the view
+     */
     protected void loadIO()
     {
         txtName = initEditText(R.id.txtName);
@@ -172,6 +175,9 @@ public class FragMilestone extends baseEditFragment
         mRbutNotWorkingOn.setOnClickListener(v -> updateWorkingOn());
     }
 
+    /**
+     * Updates the members text box when a user clicks the radio buttons
+     */
     private void updateWorkingOn()
     {
         ArrayList<String> currentMembers = currentMilestone.getMembers() != null ? currentMilestone.getMembers() : new ArrayList<>();
@@ -196,6 +202,9 @@ public class FragMilestone extends baseEditFragment
         }
     }
 
+    /**
+     * Loads the current milestone being viewed
+     */
     private void loadMilestone()
     {
         DatabaseReference dbRef = Database.root.child(Milestone.TABLE_NAME)
@@ -226,6 +235,9 @@ public class FragMilestone extends baseEditFragment
         });
     }
 
+    /**
+     * Adds a deadline to the milestone using built-in android pickers
+     */
     private View.OnClickListener addDeadline = v ->
     {
         final DateTime[] dateTime = {currentMilestone.getDeadline() == null ? new DateTime() : new DateTime(currentMilestone.getDeadline())};
@@ -267,6 +279,15 @@ public class FragMilestone extends baseEditFragment
         });
     };
 
+    /**
+     * Modifies a deadline - pushing updates to the database
+     * @param year
+     * @param month
+     * @param day
+     * @param hour
+     * @param minute
+     * @return
+     */
     private DateTime changeDeadline(int year, int month, int day, int hour, int minute)
     {
         DateTime newDT = new DateTime(year, month, day, hour, minute);
@@ -278,6 +299,9 @@ public class FragMilestone extends baseEditFragment
         return newDT;
     }
 
+    /**
+     * Loads all related comments for the current milestone
+     */
     private void loadComments()
     {
         final CommentAdapter commentAdapter = new CommentAdapter();
@@ -316,6 +340,9 @@ public class FragMilestone extends baseEditFragment
         });
     }
 
+    /**
+     * Creates a new comment for this milestone
+     */
     private View.OnClickListener addComment = v ->
     {
         LayoutInflater inflater = getActivity().getLayoutInflater();
